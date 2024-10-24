@@ -12,6 +12,7 @@ class DatabaseHelper {
   DatabaseHelper._internal();
 
   Database? _database;
+  // ignore: prefer_final_fields
   Map<String, List<Map<String, dynamic>>> _lookupTables = {}; // Cache for lookup tables
 
   Future<Database> get database async {
@@ -187,11 +188,11 @@ Future<double> adjustYeast(
       totalPercentage += percentage;
 
       // Debug information for each step
-      print("Step: $step, Yeast: $yeast, Percentage: $percentage");
+      log("Step: $step, Yeast: $yeast, Percentage: $percentage");
     }
 
     // Debug information for the total percentage
-    print("Iteration: $iteration, Total Percentage: $totalPercentage");
+    log("Iteration: $iteration, Total Percentage: $totalPercentage");
 
     // Check if this is the best percentage found so far
     if ((totalPercentage - 100).abs() < bestPercentage) {
@@ -200,13 +201,13 @@ Future<double> adjustYeast(
     }
 
     if ((totalPercentage - 100).abs() < tolerance) {
-      print("Desired percentage achieved within tolerance: $totalPercentage");
+      log("Desired percentage achieved within tolerance: $totalPercentage");
       return yeast; // Break if we are within the tolerance
     }
 
     // Check for ocsilation in results
     if (previousResults.contains(totalPercentage)) {
-      print("Oscillation detected, best total percentage $bestPercentage, returning best yeast value: $bestYeast");
+      log("Oscillation detected, best total percentage $bestPercentage, returning best yeast value: $bestYeast");
       return bestYeast; // Return the best yeast value found
     }
     else {
@@ -224,7 +225,7 @@ Future<double> adjustYeast(
     iteration++; // Increment the iteration count
   }
 
-  print("Reached maximum iterations. Best yeast value: $bestYeast");
+  log("Reached maximum iterations. Best yeast value: $bestYeast");
   return bestYeast; // Return the best yeast value after maximum iterations
 }
 

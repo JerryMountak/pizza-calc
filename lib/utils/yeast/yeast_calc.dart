@@ -4,6 +4,7 @@ import 'package:sqflite/sqflite.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'dart:developer'; // For logging
 
 class DatabaseHelper {
@@ -22,7 +23,7 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDB() async {
-    String dbPath = join(await getDatabasesPath(), 'fermentation.db');
+    final dbPath = join(await getDatabasesPath(), 'fermentation.db');
 
     // Check if the database already exists
     log("Checking if database exists at path: $dbPath");
@@ -63,7 +64,7 @@ class DatabaseHelper {
       log("Opening existing database at: $dbPath");
     }
 
-    final databaseInstance = await openDatabase(dbPath, readOnly: true);
+    final databaseInstance = await openDatabase(dbPath, singleInstance: false);
     log("Database opened successfully");
     return databaseInstance;
   }

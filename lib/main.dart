@@ -7,11 +7,9 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 
 void main() {
-  // Initialize FFI only for desktop (macOS, Windows, Linux)
   // Initialize FFI
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
-
 
   // Avoid errors caused by flutter upgrade.
   // Importing 'package:flutter/widgets.dart' is required.
@@ -50,9 +48,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // List of pages for the navigation
   static const List<Widget> _pages = <Widget>[
-    HomeTab(), // Home Page (Neapolitan and Pan Pizza)
-    RecipesTab(), // Recipes Page
-    SettingsTab(), // Settings Page
+    HomeTab(),
+    RecipesTab(),
+    SettingsTab(),
   ];
 
   void _onItemTapped(int index) {
@@ -66,29 +64,29 @@ class _MyHomePageState extends State<MyHomePage> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: Text(widget.title),
-          bottom: _selectedIndex == 0 // Only show the TabBar on the Home page
-              ? const TabBar(
-                  tabs: [
-                    Tab(text: 'Neapolitan'),
-                    Tab(text: 'Pan Pizza'),
-                  ],
-                )
-              : null, // Hide the TabBar on other pages
-          actions: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.save),
-              tooltip: 'Save Recipe',
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Recipe Saved')),
-                );
-              },
-            ),
-          ],
-        ),
+        // appBar: AppBar(
+        //   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        //   title: Text(widget.title),
+        //   bottom: _selectedIndex == 0 // Only show the TabBar on the Home page
+        //       ? const TabBar(
+        //           tabs: [
+        //             Tab(text: 'Neapolitan'),
+        //             Tab(text: 'Pan Pizza'),
+        //           ],
+        //         )
+        //       : null, // Hide the TabBar on other pages
+        //   // actions: <Widget>[
+        //   //   IconButton(
+        //   //     icon: const Icon(Icons.save),
+        //   //     tooltip: 'Save Recipe',
+        //   //     onPressed: () {
+        //   //       ScaffoldMessenger.of(context).showSnackBar(
+        //   //         const SnackBar(content: Text('Recipe Saved')),
+        //   //       );
+        //   //     },
+        //   //   ),
+        //   // ],
+        // ),
         body: _pages[_selectedIndex], // Display the current page based on selected index
         bottomNavigationBar: NavigationBar(
           selectedIndex: _selectedIndex,

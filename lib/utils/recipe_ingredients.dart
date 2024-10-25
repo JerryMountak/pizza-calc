@@ -10,19 +10,50 @@ class IngredientData {
   });
 }
 
-class RecipeIngredients extends StatelessWidget {
-  final List<IngredientData> ingredients;
+class RecipeIngredients extends StatefulWidget {
+  final List<IngredientData> initialIngredients;
 
   const RecipeIngredients({
     super.key,
-    required this.ingredients,
+    required this.initialIngredients,
   });
+
+  @override
+  RecipeIngredientsState createState() => RecipeIngredientsState();
+}
+
+class RecipeIngredientsState extends State<RecipeIngredients> {
+  late List<IngredientData> ingredients;
+
+  @override
+  void initState() {
+    super.initState();
+    ingredients = List.from(widget.initialIngredients); // Create a copy of the list
+  }
+
+  @override
+  void didUpdateWidget(RecipeIngredients oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Check if the new ingredients list is different from the current one
+    if (widget.initialIngredients != oldWidget.initialIngredients) {
+      setState(() {
+        ingredients = List.from(widget.initialIngredients);
+      });
+    }
+  }
+
+  // Function to update ingredients
+  void updateIngredients(List<IngredientData> newIngredients) {
+    setState(() {
+      ingredients = List.from(newIngredients);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
-    
+
     // Determine number of columns based on screen width
     int crossAxisCount;
     if (screenWidth < 400) {
@@ -40,7 +71,7 @@ class RecipeIngredients extends StatelessWidget {
 
     // Smaller padding (3% of screen width instead of 4%)
     final padding = screenWidth * 0.03;
-    
+
     // Reduced aspect ratio for smaller pills
     final aspectRatio = isPortrait ? 1.8 : 2.0;
 
@@ -62,8 +93,9 @@ class RecipeIngredients extends StatelessWidget {
             context,
             ingredient.label,
             ingredient.value.toStringAsFixed(
-              ingredient.value.truncateToDouble() == ingredient.value ? 0 : 2
-            ),
+                ingredient.value.truncateToDouble() == ingredient.value
+                    ? 0
+                    : 2),
             screenWidth,
           );
         },
@@ -71,21 +103,22 @@ class RecipeIngredients extends StatelessWidget {
     );
   }
 
-  Widget _buildIngredientPill(BuildContext context, String label, String value, double screenWidth) {
+  Widget _buildIngredientPill(
+      BuildContext context, String label, String value, double screenWidth) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     // Reduced font sizes
-    final labelSize = screenWidth * 0.025; // Reduced from 0.03
-    final valueSize = screenWidth * 0.035; // Reduced from 0.04
-    final unitSize = screenWidth * 0.025; // Reduced from 0.03
+    final labelSize = screenWidth * 0.025;
+    final valueSize = screenWidth * 0.035;
+    final unitSize = screenWidth * 0.025;
 
     // Adjusted min/max font sizes
-    final double finalLabelSize = labelSize.clamp(11.0, 14.0); // Reduced from 12-16
-    final double finalValueSize = valueSize.clamp(14.0, 20.0); // Reduced from 16-24
-    final double finalUnitSize = unitSize.clamp(11.0, 14.0); // Reduced from 12-16
+    final double finalLabelSize = labelSize.clamp(11.0, 14.0);
+    final double finalValueSize = valueSize.clamp(14.0, 20.0);
+    final double finalUnitSize = unitSize.clamp(11.0, 14.0);
 
     // Smaller border radius
-    final borderRadius = screenWidth * 0.03.clamp(15.0, 25.0); // Reduced from 20-30
+    final borderRadius = screenWidth * 0.03.clamp(15.0, 25.0);
 
     return Container(
       decoration: BoxDecoration(
@@ -110,7 +143,7 @@ class RecipeIngredients extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: screenWidth * 0.008), // Reduced spacing
+          SizedBox(height: screenWidth * 0.008),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.baseline,

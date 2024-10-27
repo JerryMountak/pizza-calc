@@ -43,14 +43,16 @@ class DatabaseHelper {
       // If working on web
       if (kIsWeb) {
         log("Copying database for web from assets");
-        final data = await rootBundle.load(join('assets', 'fermentation.db'));
+        // final data = await rootBundle.load(join('assets', 'fermentation.db'));
+        final data = await rootBundle.load('assets/fermentation.db');
         final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
         await databaseFactory.writeDatabaseBytes(dbPath, bytes);
         log("Database copied successfully for web");
       } else {
         // Copy from asset
         try {
-          ByteData data = await rootBundle.load(join("assets", "fermentation.db"));
+          // ByteData data = await rootBundle.load(join("assets", "fermentation.db"));
+          ByteData data = await rootBundle.load('assets/fermentation.db');
           List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 
           // Write the copied database to the device's storage

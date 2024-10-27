@@ -1,5 +1,7 @@
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:pizza_calc/utils/recipes/recipe.dart';
+import 'package:pizza_calc/utils/theme.dart';
 import 'package:provider/provider.dart';
 import 'pages/home_page.dart';
 import 'pages/recipes_page.dart';
@@ -16,8 +18,11 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => RecipeProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => RecipeProvider())
+      ],
       child: const MyApp()
     )
   );
@@ -26,18 +31,45 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static final _defaultLightColorScheme =
+    ColorScheme.fromSeed(seedColor: Colors.deepPurple);
+
+  static final _defaultDarkColorScheme = 
+    ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark);
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'PizzaCalc',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'PizzaCalc'),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return DynamicColorBuilder(
+          builder: (lightColorScheme, darkColorScheme) {
+            final lightScheme = themeProvider.useDynamicColors
+                ? (lightColorScheme ?? _defaultLightColorScheme)
+                : _defaultLightColorScheme;
+            final darkScheme = themeProvider.useDynamicColors
+                ? (darkColorScheme ?? _defaultDarkColorScheme)
+                : _defaultDarkColorScheme;
+
+            return MaterialApp(
+              title: 'PizzaCalc',
+              theme: ThemeData(
+                useMaterial3: true,
+                colorScheme: lightScheme,
+              ),
+              darkTheme: ThemeData(
+                useMaterial3: true,
+                colorScheme: darkScheme,
+              ),
+              themeMode: themeProvider.themeMode,
+              home: const MyHomePage(title: 'PizzaCalc'),
+            );
+          },
+        );
+      },
     );
   }
 }
+
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});

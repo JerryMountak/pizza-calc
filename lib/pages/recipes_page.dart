@@ -1,101 +1,12 @@
 import 'dart:developer';
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
+import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:pizza_calc/utils/yeast/yeast_selector.dart';
-
-// Model class for pizza dough recipe
-class PizzaDoughRecipe {
-  final int? id;
-  final String name;
-  final int doughBalls;
-  final int ballWeight;
-  final int hydration;
-  final double saltPercentage;
-  final double yeastPercentage;
-  final double? sugarPercentage;
-  final double? fatPercentage;
-  final double roomTemp;
-  final int roomTempHours;
-  final double? controlledTemp;
-  final int? controlledTempHours;
-  final bool isMultiStage;
-  final bool hasSugar;
-  final bool hasFat;
-  final YeastType yeastType;
-  final String notes;
-
-  PizzaDoughRecipe({
-    this.id,
-    required this.name,
-    required this.doughBalls,
-    required this.ballWeight,
-    required this.hydration,
-    required this.saltPercentage,
-    this.yeastPercentage = 0.3,
-    this.sugarPercentage,
-    this.fatPercentage,
-    required this.roomTemp,
-    required this.roomTempHours,
-    this.controlledTemp,
-    this.controlledTempHours,
-    required this.isMultiStage,
-    required this.hasSugar,
-    required this.hasFat,
-    required this.yeastType,
-    this.notes = '',
-  });
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'doughBalls': doughBalls,
-      'ballWeight': ballWeight,
-      'hydration': hydration,
-      'saltPercentage': saltPercentage,
-      'yeastPercentage': yeastPercentage,
-      'sugarPercentage': sugarPercentage,
-      'fatPercentage': fatPercentage,
-      'roomTemp': roomTemp,
-      'roomTempHours': roomTempHours,
-      'controlledTemp': controlledTemp,
-      'controlledTempHours': controlledTempHours,
-      'isMultiStage': isMultiStage ? 1 : 0,
-      'hasSugar': hasSugar ? 1 : 0,
-      'hasFat': hasFat ? 1 : 0,
-      'yeastType': yeastType.index,
-      'notes': notes,
-    };
-  }
-
-  factory PizzaDoughRecipe.fromMap(Map<String, dynamic> map) {
-    return PizzaDoughRecipe(
-      id: map['id'],
-      name: map['name'],
-      doughBalls: map['doughBalls'],
-      ballWeight: map['ballWeight'],
-      hydration: map['hydration'],
-      saltPercentage: map['saltPercentage'],
-      yeastPercentage: map['yeastPercentage'],
-      sugarPercentage: map['sugarPercentage'],
-      fatPercentage: map['fatPercentage'],
-      roomTemp: map['roomTemp'],
-      roomTempHours: map['roomTempHours'],
-      controlledTemp: map['controlledTemp'],
-      controlledTempHours: map['controlledTempHours'],
-      isMultiStage: map['isMultiStage'] == 1,
-      hasSugar: map['hasSugar'] == 1,
-      hasFat: map['hasFat'] == 1,
-      yeastType: YeastType.values[map['yeastType']],
-      notes: map['notes'],
-    );
-  }
-}
+import 'package:pizza_calc/utils/recipes/recipe.dart';
 
 // Database helper class
 class RecipeDatabaseHelper {
@@ -131,14 +42,16 @@ class RecipeDatabaseHelper {
       // If working on web
       if (kIsWeb) {
         log("Copying database for web from assets");
-        final data = await rootBundle.load(join('assets', 'fermentation.db'));
+        // final data = await rootBundle.load(join('assets', 'fermentation.db'));
+        final data = await rootBundle.load('assets/fermentation.db');
         final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
         await databaseFactory.writeDatabaseBytes(dbPath, bytes);
         log("Database copied successfully for web");
       } else {
         // Copy from asset
         try {
-          ByteData data = await rootBundle.load(join("assets", "fermentation.db"));
+          // ByteData data = await rootBundle.load(join("assets", "fermentation.db"));
+          ByteData data = await rootBundle.load('assets/fermentation.db');
           List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 
           // Write the copied database to the device's storage
@@ -180,6 +93,7 @@ class RecipeDatabaseHelper {
         hasSugar INTEGER NOT NULL,
         hasFat INTEGER NOT NULL,
         yeastType INTEGER NOT NULL,
+        pizzaType INTEGER NOT NULL,
         notes TEXT
       )
     ''');
@@ -196,6 +110,12 @@ class RecipeDatabaseHelper {
     final db = await instance.database;
     final List<Map<String, dynamic>> maps = await db.query('recipes');
     return List.generate(maps.length, (i) => PizzaDoughRecipe.fromMap(maps[i]));
+  }
+
+  Future<PizzaDoughRecipe?> getRecipeById(int id) async {
+    final db = await instance.database;
+    final List<Map<String, dynamic>> maps = await db.query('recipes', where: 'id = ?', whereArgs: [id]);
+    return maps.isNotEmpty ? PizzaDoughRecipe.fromMap(maps.first) : null;
   }
 
   Future<int> updateRecipe(PizzaDoughRecipe recipe) async {
@@ -232,7 +152,7 @@ class RecipesTabState extends State<RecipesTab> {
   @override
   void initState() {
     super.initState();
-    _loadRecipes(); // Initialize _recipesFuture here
+    _loadRecipes();
   }
 
   void _loadRecipes() {
@@ -241,7 +161,12 @@ class RecipesTabState extends State<RecipesTab> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<PizzaDoughRecipe>>(
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text("PizzaCalc"),
+      ),
+      body: FutureBuilder<List<PizzaDoughRecipe>>(
         future: _recipesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -262,15 +187,16 @@ class RecipesTabState extends State<RecipesTab> {
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
-                  title: Text(recipe.name),
+                  title: Text(recipe.name, style: const TextStyle(fontWeight: FontWeight.bold),),
                   subtitle: Text(
                     'Balls: ${recipe.doughBalls}x${recipe.ballWeight}g, '
                     'Hydration: ${recipe.hydration}%\n'
                     'RT: ${recipe.roomTempHours}h at ${recipe.roomTemp}°C'
-                    '${recipe.controlledTemp != null ? 
+                    '${recipe.isMultiStage ? 
                       ', CT: ${recipe.controlledTempHours}h at ${recipe.controlledTemp}°C' 
                       : ''}'
                   ),
+                  leading: const Icon(Icons.local_pizza_rounded),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () async {
@@ -281,13 +207,20 @@ class RecipesTabState extends State<RecipesTab> {
                     },
                   ),
                   onTap: () {
-                    // Navigate to recipe detail/edit screen
-                  },
+                    // Set the selected recipe ID in the provider
+                    // context.read<RecipeState>().selectRecipe(recipe.id!);
+
+                    Provider.of<RecipeProvider>(context, listen: false).updateRecipe(recipe);
+
+                    // Switch to the desired home tab after navigating back
+                    // context.read<TabController>().index = 0; // Assuming 0 is the index for the home tab
+                  }
                 ),
               );
             },
           );
         },
-      );
-  }
+      )
+    );
+      }
 }

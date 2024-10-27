@@ -1,10 +1,10 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:pizza_calc/pages/recipes_page.dart';
-import 'package:pizza_calc/utils/recipe_ingredients.dart';
+import 'package:pizza_calc/utils/recipes/recipe.dart';
+import 'package:pizza_calc/utils/recipes/recipe_ingredients.dart';
 import 'package:pizza_calc/utils/yeast/yeast_calc.dart';
 import 'package:pizza_calc/utils/yeast/yeast_selector.dart';
-
-import 'dart:developer'; // For logging
+import 'package:provider/provider.dart';
 
 class IngredientInput extends StatefulWidget {
   final List<IngredientData> initialIngredients;
@@ -26,7 +26,7 @@ class IngredientInputState extends State<IngredientInput> {
   late int _ballWeight;
   late int _hydration;
   late double _saltPercentage;
-  final double _yeastPercentage = 0.3;
+  late double _yeastPercentage = 0.3;
   late double _sugarPercentage;
   late double _fatPercentage;
   late double _rt;
@@ -37,6 +37,7 @@ class IngredientInputState extends State<IngredientInput> {
   late bool _hasSugar;
   late bool _hasFat;
   late YeastType _yeastType;
+  late PizzaType _pizzaType;
 
   // Variables for calculated results
   double _flour = 0;
@@ -48,14 +49,14 @@ class IngredientInputState extends State<IngredientInput> {
 
   // List of ingredients
   List<IngredientData> ingredients = [
-      const IngredientData(label: 'Flour', value: 0),
-      const IngredientData(label: 'Water', value: 0),
-      const IngredientData(label: 'Salt', value: 0),
-      const IngredientData(label: 'Yeast', value: 0),
-    ];
+    const IngredientData(label: 'Flour', value: 0),
+    const IngredientData(label: 'Water', value: 0),
+    const IngredientData(label: 'Salt', value: 0),
+    const IngredientData(label: 'Yeast', value: 0),
+  ];
 
   // Recipe State
-  late PizzaDoughRecipe _recipe;
+  PizzaDoughRecipe? _recipe;
 
   // Controllers to track user inputs
   late TextEditingController doughBallController;
@@ -70,63 +71,62 @@ class IngredientInputState extends State<IngredientInput> {
   late TextEditingController ctController;
   late TextEditingController ctHoursController;
 
-  late List<TextEditingController> controllers = [
-    doughBallController,
-    ballWeightController,
-    hydrationController,
-    saltPercentageController,
-    sugarController,
-    fatController,
-    yeastPercentageController,
-    rtController,
-    rtHoursController,
-    ctController,
-    ctHoursController
-  ];
+  late List<TextEditingController> controllers;
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize local ingredient variables
-    _doughBalls = widget.initialIngredients.where(
-      (ingredient) => ingredient.label == 'Dough balls'
-    ).first.value.toInt();
-    _ballWeight = widget.initialIngredients.where(
-      (ingredient) => ingredient.label == 'Ball weight'
-    ).first.value.toInt();
-    _hydration = widget.initialIngredients.where(
-      (ingredient) => ingredient.label == 'Hydration'
-    ).first.value.toInt();
-    _saltPercentage = widget.initialIngredients.where(
-      (ingredient) => ingredient.label == 'Salt percentage'
-    ).first.value.toDouble();
-    _sugarPercentage = widget.initialIngredients.where(
-      (ingredient) => ingredient.label == 'Sugar percentage'
-    ).first.value.toDouble();
-    _fatPercentage = widget.initialIngredients.where(
-      (ingredient) => ingredient.label == 'Fat percentage'
-    ).first.value.toDouble();
-    _rt = widget.initialIngredients.where(
-      (ingredient) => ingredient.label == 'Room temperature'
-    ).first.value.toDouble();
-    _rtHours = widget.initialIngredients.where(
-      (ingredient) => ingredient.label == 'Room time'
-    ).first.value.toInt();
-    _ct = widget.initialIngredients.where(
-      (ingredient) => ingredient.label == 'Cold temperature'
-    ).first.value.toInt();
-    _ctHours = widget.initialIngredients.where(
-      (ingredient) => ingredient.label == 'Cold time'
-    ).first.value.toInt();
+    // Initialize local ingredient variables from widget.initialIngredients
+    _doughBalls = widget.initialIngredients
+        .firstWhere((i) => i.label == 'Dough balls')
+        .value
+        .toInt();
+    _ballWeight = widget.initialIngredients
+        .firstWhere((i) => i.label == 'Ball weight')
+        .value
+        .toInt();
+    _hydration = widget.initialIngredients
+        .firstWhere((i) => i.label == 'Hydration')
+        .value
+        .toInt();
+    _saltPercentage = widget.initialIngredients
+        .firstWhere((i) => i.label == 'Salt percentage')
+        .value
+        .toDouble();
+    _sugarPercentage = widget.initialIngredients
+        .firstWhere((i) => i.label == 'Sugar percentage')
+        .value
+        .toDouble();
+    _fatPercentage = widget.initialIngredients
+        .firstWhere((i) => i.label == 'Fat percentage')
+        .value
+        .toDouble();
+    _rt = widget.initialIngredients
+        .firstWhere((i) => i.label == 'Room temperature')
+        .value
+        .toDouble();
+    _rtHours = widget.initialIngredients
+        .firstWhere((i) => i.label == 'Room time')
+        .value
+        .toInt();
+    _ct = widget.initialIngredients
+        .firstWhere((i) => i.label == 'Cold temperature')
+        .value
+        .toInt();
+    _ctHours = widget.initialIngredients
+        .firstWhere((i) => i.label == 'Cold time')
+        .value
+        .toInt();
 
-    // Initialize other local variables
+    // Initialize other local variables from widget.initialParams
     _isMultiStage = widget.initialParams[0];
     _hasSugar = widget.initialParams[1];
     _hasFat = widget.initialParams[2];
     _yeastType = widget.initialParams[3] ? YeastType.instant : YeastType.active;
+    _pizzaType = widget.initialParams[4] ? PizzaType.neapolitan : PizzaType.pan;
 
-    // Initialize controllers for each TextField
+    // Initialize controllers
     doughBallController = TextEditingController(text: _doughBalls.toString());
     ballWeightController = TextEditingController(text: _ballWeight.toString());
     hydrationController = TextEditingController(text: _hydration.toString());
@@ -139,13 +139,87 @@ class IngredientInputState extends State<IngredientInput> {
     ctController = TextEditingController(text: _ct.toString());
     ctHoursController = TextEditingController(text: _ctHours.toString());
 
-    // Call the function to calculate the ingredients
+    // Initialize controllers list
+    controllers = [
+      doughBallController,
+      ballWeightController,
+      hydrationController,
+      saltPercentageController,
+      sugarController,
+      fatController,
+      yeastPercentageController,
+      rtController,
+      rtHoursController,
+      ctController,
+      ctHoursController
+    ];
+
     _calculateIngredients();
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    PizzaDoughRecipe recipe;
+    if (Provider.of<RecipeProvider>(context).currentTab == 0) {
+      recipe = Provider.of<RecipeProvider>(context).neapolitanRecipe;
+    }
+    else {
+      recipe = Provider.of<RecipeProvider>(context).panRecipe;
+    }
+    
+    _loadRecipe(recipe);
+    }
+
+  void _loadRecipe(PizzaDoughRecipe recipe) {
+    setState(() {
+      // Update state variables
+      _doughBalls = recipe.doughBalls;
+      _ballWeight = recipe.ballWeight;
+      _hydration = recipe.hydration;
+      _saltPercentage = recipe.saltPercentage;
+      _yeastPercentage = recipe.yeastPercentage;
+      _sugarPercentage = recipe.sugarPercentage ?? 0.0;
+      _fatPercentage = recipe.fatPercentage ?? 0.0;
+      _rt = recipe.roomTemp;
+      _rtHours = recipe.roomTempHours;
+      _ct = recipe.controlledTemp?.toInt() ?? 0;
+      _ctHours = recipe.controlledTempHours ?? 0;
+      _isMultiStage = recipe.isMultiStage;
+      _hasSugar = recipe.hasSugar;
+      _hasFat = recipe.hasFat;
+      _yeastType = recipe.yeastType;
+      _pizzaType = recipe.pizzaType;
+
+      // Update text controllers
+      doughBallController.text = recipe.doughBalls.toString();
+      ballWeightController.text = recipe.ballWeight.toString();
+      hydrationController.text = recipe.hydration.toString();
+      saltPercentageController.text = recipe.saltPercentage.toString();
+      yeastPercentageController.text = recipe.yeastPercentage.toString();
+      sugarController.text = (recipe.sugarPercentage ?? 0.0).toString();
+      fatController.text = (recipe.fatPercentage ?? 0.0).toString();
+      rtController.text = recipe.roomTemp.toString();
+      rtHoursController.text = recipe.roomTempHours.toString();
+      ctController.text = (recipe.controlledTemp ?? 0).toString();
+      ctHoursController.text = (recipe.controlledTempHours ?? 0).toString();
+
+      // Update recipe state
+      _recipe = recipe;
+    });
+
+    _calculateIngredients();
+  }
+
+  // void _loadRecipeById(int id) async {
+  //   final recipe = await RecipeDatabaseHelper.instance.getRecipeById(id);
+  //   if (recipe != null) {
+  //     _loadRecipe(recipe);
+  //   }
+  // }
+
+  @override
   void dispose() {
-    // Clean up controllers when the widget is disposed
     for (var controller in controllers) {
       controller.dispose();
     }
@@ -154,7 +228,8 @@ class IngredientInputState extends State<IngredientInput> {
 
   // Function to calculate the ingredients with added debug info
   void _calculateIngredients() async {
-    // Log the start time
+    // final recipeProvider = Provider.of<RecipeProvider>(context);
+
     final startTime = DateTime.now();
     log("Ingredient calculation started at: $startTime");
 
@@ -163,7 +238,9 @@ class IngredientInputState extends State<IngredientInput> {
     log("Total dough weight: $totalWeight");
 
     // Perform ingredient calculations
-    _flour = totalWeight / (1 + _hydration / 100 + _saltPercentage / 100 + (_hasSugar ? _sugarPercentage / 100 : 0)  + (_hasFat ? _fatPercentage / 100 : 0));
+    _flour = totalWeight / (1 + _hydration / 100 + _saltPercentage / 100 + 
+        (_hasSugar ? _sugarPercentage / 100 : 0) + 
+        (_hasFat ? _fatPercentage / 100 : 0));
     _water = _flour * _hydration / 100;
     _salt = _flour * _saltPercentage / 100;
     _sugar = _flour * (_hasSugar ? _sugarPercentage / 100 : 0);
@@ -172,18 +249,8 @@ class IngredientInputState extends State<IngredientInput> {
     log("Calculated flour: $_flour, water: $_water, salt: $_salt, sugar: $_sugar, fat: $_fat");
 
     // Determine yeast type
-    String yeastType;
-    if (_yeastType == YeastType.active) {
-      yeastType = 'active';
-    } else if (_yeastType == YeastType.instant) {
-      yeastType = 'instant';
-    } else {
-      throw Exception('Invalid yeast type: $_yeastType');
-    }
+    String yeastType = _yeastType == YeastType.active ? 'active' : 'instant';
     log("Yeast type: $yeastType");
-
-    // Start tracking yeast calculation time
-    final yeastStartTime = DateTime.now();
 
     // Calculate yeast
     List<List<double>> fermentationSteps = [];
@@ -195,25 +262,24 @@ class IngredientInputState extends State<IngredientInput> {
     log("Fermentation steps: $fermentationSteps");
 
     try {
-      await DatabaseHelper().loadLookupTable(yeastType); // or 'instant'
+      await DatabaseHelper().loadLookupTable(yeastType);
       List<Map<String, dynamic>> lookupTable =
           DatabaseHelper().getCachedLookupTable('active');
 
-      double yeastAmount = await yeastCalc(fermentationSteps, lookupTable,
-          initialYeast: _yeastPercentage);
+      double yeastAmount = await yeastCalc(
+        fermentationSteps, 
+        lookupTable,
+        initialYeast: _yeastPercentage
+      );
       _yeast = _flour * yeastAmount / 100;
 
-      // Log the yeast calculation details
       log("Yeast percentage: $yeastAmount, Calculated yeast: $_yeast");
-
-      // Log the time taken for yeast calculation
-      final yeastEndTime = DateTime.now();
-      log("Yeast calculation took: ${yeastEndTime.difference(yeastStartTime).inMilliseconds} ms");
     } catch (e) {
       log("Error during yeast calculation: $e");
     }
 
-    // Notify Flutter to rebuild the UI with the updated values
+    if (!mounted) return; // Check if the widget is still mounted
+
     setState(() {
       // Update ingredients list
       ingredients = [
@@ -227,12 +293,12 @@ class IngredientInputState extends State<IngredientInput> {
 
       // Update recipe state
       _recipe = PizzaDoughRecipe(
-        name: '',
+        name: _recipe?.name ?? '',
         doughBalls: _doughBalls,
         ballWeight: _ballWeight,
         hydration: _hydration,
         saltPercentage: _saltPercentage,
-        yeastPercentage: _yeastPercentage,  
+        yeastPercentage: _yeastPercentage,
         sugarPercentage: _sugarPercentage,
         fatPercentage: _fatPercentage,
         roomTemp: _rt,
@@ -243,13 +309,13 @@ class IngredientInputState extends State<IngredientInput> {
         hasSugar: _hasSugar,
         hasFat: _hasFat,
         yeastType: _yeastType,
+        pizzaType: _pizzaType,
       );
     });
   }
 
   // Function to get the current recipe data
   PizzaDoughRecipe? getRecipeData() {
-    // Return the current recipe state
     return _recipe;
   }
 
@@ -704,3 +770,23 @@ class IngredientInputState extends State<IngredientInput> {
     ])));
   }
 }
+
+// TODO: Implement debounce for stalling text field changes
+// Timer? _debounce;
+
+// void _onInputChanged(String value) {
+//   if (_debounce?.isActive ?? false) _debounce!.cancel();
+//   _debounce = Timer(const Duration(milliseconds: 300), () {
+//     if (value.isNotEmpty) {
+//       _saltPercentage = double.parse(value);
+//       _calculateIngredients();
+//     }
+//   });
+// }
+
+// // In your TextField
+// TextField(
+//   controller: saltPercentageController,
+//   onChanged: _onInputChanged,
+//   // ... other properties ...
+// );

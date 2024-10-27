@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pizza_calc/utils/ingredient_input.dart';
-import 'package:pizza_calc/utils/recipe_ingredients.dart';
+import 'package:pizza_calc/utils/recipes/recipe_ingredients.dart';
 import 'package:pizza_calc/pages/recipes_page.dart';
+import 'package:pizza_calc/utils/recipes/recipe.dart';
+import 'package:provider/provider.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -12,12 +14,11 @@ class HomeTab extends StatefulWidget {
 
 class HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
   int _selectedTab = 0;
+  late TabController _tabController;
 
   // Define GlobalKeys for each IngredientInput
-  final GlobalKey<IngredientInputState> _neapolitanIngredientInputKey =
-      GlobalKey<IngredientInputState>();
-  final GlobalKey<IngredientInputState> _panIngredientInputKey =
-      GlobalKey<IngredientInputState>();
+  final GlobalKey<IngredientInputState> _neapolitanIngredientInputKey = GlobalKey<IngredientInputState>();
+  final GlobalKey<IngredientInputState> _panIngredientInputKey = GlobalKey<IngredientInputState>();
 
   static const List<IngredientData> _neapolitanIngredients = [
     IngredientData(label: 'Dough balls', value: 4),
@@ -33,8 +34,8 @@ class HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
   ];
 
   static const List<bool> _neapolitanParams = [
-    // hasSugar, hasFat, isMultiStage, yeastType(instant/active)
-    false, false, false, false
+    // hasSugar, hasFat, isMultiStage, yeastType(instant/active), pizzaType (neapolitan/pan)
+    false, false, false, false, true
   ];
 
   static const List<IngredientData> _panIngredients = [
@@ -51,24 +52,28 @@ class HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
   ];
 
   static const List<bool> _panParams = [
-    // hasSugar, hasFat, isMultiStage, yeastType(instant/active)
-    false, false, true, false
+    // hasSugar, hasFat, isMultiStage, yeastType(instant/active), pizzaType (neapolitan/pan)
+    false, false, true, false, false
   ];
 
   // A method to save the current recipe
-  Future<void> _saveRecipe() async {
+  Future<void> _saveRecipe(String recipeName) async {
     // Check which tab is currently selected
+    
     if (_selectedTab == 0) {
+    // if (Provider.of<RecipeProvider>(context, listen: false).currentTab == 0) {
       // Neapolitan tab
-      final neapolitanRecipe =
-          _neapolitanIngredientInputKey.currentState?.getRecipeData();
+      PizzaDoughRecipe? neapolitanRecipe = _neapolitanIngredientInputKey.currentState?.getRecipeData();
       if (neapolitanRecipe != null) {
+        neapolitanRecipe.name = recipeName;
         await RecipeDatabaseHelper.instance.insertRecipe(neapolitanRecipe);
       }
     } else if (_selectedTab == 1) {
+    // } else if (Provider.of<RecipeProvider>(context, listen: false).currentTab == 1) {
       // Pan Pizza tab
-      final panRecipe = _panIngredientInputKey.currentState?.getRecipeData();
+      PizzaDoughRecipe? panRecipe = _panIngredientInputKey.currentState?.getRecipeData();
       if (panRecipe != null) {
+        panRecipe.name = recipeName;
         await RecipeDatabaseHelper.instance.insertRecipe(panRecipe);
       }
     }
@@ -84,42 +89,105 @@ class HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text("PizzaCalc"),
-        bottom: TabBar(
-            tabs: const [
-              Tab(text: 'Neapolitan'),
-              Tab(text: 'Pan Pizza'),
+  void initState() {
+    super.initState();
+    final recipeProvider = Provider.of<RecipeProvider>(context, listen: false);
+    _tabController = TabController(length: 2, vsync: this, initialIndex: recipeProvider.currentTab);
+    _tabController.addListener(() {
+      recipeProvider.setTab(_tabController.index);
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {    
+    // final recipeProvider = Provider.of<RecipeProvider>(context);
+    return Consumer<RecipeProvider>(
+      builder: (context, recipeProvider, child) {
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+            title: const Text("PizzaCalc"),
+            bottom: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: 'Neapolitan'),
+                  Tab(text: 'Pan Pizza'),
+                ],
+                onTap: (index) {
+                  recipeProvider.setTab(index);
+                  setState(() {
+                    _selectedTab = index;
+                  });
+                },
+            )
+          ),
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              IngredientInput(
+                key: _neapolitanIngredientInputKey,
+                initialIngredients: _neapolitanIngredients,
+                initialParams: _neapolitanParams,
+              ),
+              IngredientInput(
+                key: _panIngredientInputKey,
+                initialIngredients: _panIngredients,
+                initialParams: _panParams,
+              ),
             ],
-            onTap: (index) {
-              setState(() {
-                _selectedTab = index;
-              });
-            }),
-      ),
-      body: TabBarView(
-        // controller: _tabController,
-        children: [
-          IngredientInput(
-            key: _neapolitanIngredientInputKey, // Pass the GlobalKey here
-            initialIngredients: _neapolitanIngredients,
-            initialParams: _neapolitanParams,
           ),
-          IngredientInput(
-            key: _panIngredientInputKey, // Pass the GlobalKey here
-            initialIngredients: _panIngredients,
-            initialParams: _panParams,
+          floatingActionButton: FloatingActionButton.small(
+            tooltip: 'Save Recipe',
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  String recipeName = '';
+                  return AlertDialog(
+                    title: const Text('Recipe name'),
+                    content: TextField(
+                      autofocus: true,
+                      onChanged: (value) {
+                        recipeName = value;
+                      },
+                      onSubmitted: (value) {
+                        _saveRecipe(value);
+                        Navigator.of(context).pop();
+                      },
+                      decoration: const InputDecoration(border: OutlineInputBorder()),
+                    ),
+                    actions: [
+                      TextButton(
+                        child: const Text('Cancel'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      TextButton(
+                        child: const Text('Save'),
+                        onPressed: () {
+                          _saveRecipe(recipeName);
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                    ),
+                  );
+                },
+              );
+            },
+            child: const Icon(Icons.save),
           ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.small(
-        tooltip: 'Save Recipe',
-        onPressed: _saveRecipe, // Call the save method here
-        child: const Icon(Icons.save),
-      ),
+        );
+      }
     );
   }
 }

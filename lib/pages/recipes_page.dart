@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:pizza_calc/utils/recipes/recipe.dart';
@@ -22,35 +23,49 @@ class RecipeDatabaseHelper {
   }
 
   Future<Database> _initDB() async {
-    final dbPath = join(await getDatabasesPath(), 'fermentation.db');
-    
-    // Check if the database exists
-    log("Checking if recipes database exists at path: $dbPath");
-    bool dbExists = await databaseExists(dbPath);
+    bool dbExists;
+    String dbPath;
+
+    // If working on web
+    if (kIsWeb) {
+      log("Detected web environment");
+
+      dbPath = join(await getDatabasesPath(), 'fermentation.db');
+
+      // Check if the database exists
+      log("Checking if recipes database exists at path: $dbPath");
+      dbExists = await databaseExists(dbPath);
+    }
+    else {
+      log("No web environment detected");
+
+      final appDocDir = await getApplicationDocumentsDirectory();
+      dbPath = join(appDocDir.path, 'fermentation.db');
+
+      // Check if the database exists
+      log("Checking if recipes database exists at path: $dbPath");
+      dbExists = await databaseExists(dbPath);
+    }
     
     if (!dbExists) {
-      log("Creating new copy from asset");
-
-      // Make sure the parent directory exists
-      try {
-        await Directory(dirname(dbPath)).create(recursive: true);
-        log("Created directory for database at: ${dirname(dbPath)}");
-      } catch (e) {
-        log("Error creating directory: $e");
-      }
-
       // If working on web
       if (kIsWeb) {
-        log("Copying database for web from assets");
-        // final data = await rootBundle.load(join('assets', 'fermentation.db'));
-        final data = await rootBundle.load('assets/fermentation.db');
-        final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-        await databaseFactory.writeDatabaseBytes(dbPath, bytes);
-        log("Database copied successfully for web");
-      } else {
-        // Copy from asset
         try {
-          // ByteData data = await rootBundle.load(join("assets", "fermentation.db"));
+          log("Copying database for web from assets");
+
+          final data = await rootBundle.load('assets/fermentation.db');
+          final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+          await databaseFactory.writeDatabaseBytes(dbPath, bytes);
+
+          log("Database copied successfully for web");
+        } catch (e) {
+          log("Error copying database: $e");
+        }
+      } 
+      else { // Working on Android        
+        try {
+          log("Creating new copy from assets");
+
           ByteData data = await rootBundle.load('assets/fermentation.db');
           List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 
@@ -164,7 +179,7 @@ class RecipesTabState extends State<RecipesTab> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text("PizzaCalc"),
+        title: const Text("Recipes"),
       ),
       body: FutureBuilder<List<PizzaDoughRecipe>>(
         future: _recipesFuture,

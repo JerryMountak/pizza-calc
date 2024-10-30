@@ -1,4 +1,5 @@
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pizza_calc/utils/recipes/recipe.dart';
 import 'package:pizza_calc/utils/theme.dart';
@@ -10,9 +11,11 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 
 void main() {
-  // Initialize FFI
-  sqfliteFfiInit();
-  databaseFactory = databaseFactoryFfi;
+  if (kIsWeb) {
+    // Initialize FFI for web use
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
 
   // Avoid errors caused by flutter upgrade.
   WidgetsFlutterBinding.ensureInitialized();

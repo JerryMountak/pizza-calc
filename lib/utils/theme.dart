@@ -69,7 +69,7 @@ class _ThemeSelectorState extends State<ThemeSelector> {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return Padding(
-          padding: const EdgeInsets.all(5.0),
+          padding: const EdgeInsets.fromLTRB(5.0, 5.0, 0.0, 5.0),
           child: ListTile(
             title: const Text('Theme'),
             trailing: ToggleButtons(

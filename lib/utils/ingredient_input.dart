@@ -261,7 +261,14 @@ class IngredientInputState extends State<IngredientInput> {
 
     // Calculate total dough weight
     int totalWeight = _doughBalls * _ballWeight;
-    // TODO: add optional bowl residue compensation
+
+    // Add bowl compensation if enabled
+    if (Provider.of<AdvancedProvider>(context, listen: false).bowlCompensation) {
+      log("~~~~~~~ Adding bowl compensation ~~~~~~~");
+      double totalWeightDouble = totalWeight.toDouble();
+      totalWeightDouble = totalWeight * (1 + Provider.of<AdvancedProvider>(context, listen: false).compPercentage / 100);
+      totalWeight = totalWeightDouble.toInt();
+    }
     log("Total dough weight: $totalWeight");
 
     // Perform ingredient calculations

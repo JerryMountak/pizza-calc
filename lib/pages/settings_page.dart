@@ -16,7 +16,8 @@ class SettingsTabState extends State<SettingsTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<ThemeProvider, AdvancedProvider>(builder: (context, themeProvider, advancedProvider, child) {
+    return Consumer2<ThemeProvider, AdvancedProvider>(
+        builder: (context, themeProvider, advancedProvider, child) {
       return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -33,8 +34,8 @@ class SettingsTabState extends State<SettingsTab> {
                 child: Text(
                   'Appearance',
                   style: Theme.of(context).textTheme.labelSmall?.apply(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                 ),
               ),
 
@@ -61,7 +62,10 @@ class SettingsTabState extends State<SettingsTab> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
               ),
 
-              const Divider(indent: 24, endIndent: 24,),
+              const Divider(
+                indent: 24,
+                endIndent: 24,
+              ),
 
               // Advanced Features
               Padding(
@@ -69,8 +73,8 @@ class SettingsTabState extends State<SettingsTab> {
                 child: Text(
                   'Advanced Features',
                   style: Theme.of(context).textTheme.labelSmall?.apply(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                 ),
               ),
 
@@ -79,10 +83,11 @@ class SettingsTabState extends State<SettingsTab> {
                 value: advancedProvider.usePreferments,
                 onTileTap: () {
                   Navigator.push(
-                    context, 
+                    context,
                     MaterialPageRoute(
                       builder: (context) => PrefermentSelector(
-                        onPrefermentChanged: advancedProvider.updatePrefermentType,
+                        onPrefermentChanged:
+                            advancedProvider.setPrefermentType,
                         initialValue: PrefermentType.poolish,
                       ),
                     ),
@@ -96,12 +101,42 @@ class SettingsTabState extends State<SettingsTab> {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 subtitle: Text(
-                  advancedProvider.usePreferments 
-                    ? advancedProvider.prefermentType.displayName 
-                    : 'Choose preferment type',
+                  advancedProvider.usePreferments
+                      ? advancedProvider.prefermentType.displayName
+                      : 'Choose preferment type',
                   style: Theme.of(context).textTheme.bodySmall,
                 )
-              )
+              ),
+
+              // Bowl Compensation
+              CustomSwitchTile(
+                value: advancedProvider.bowlCompensation,
+                onTileTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CompensationSelector(
+                        onCompChanged: advancedProvider.setCompPercentage,
+                        initialValue: advancedProvider.compPercentage,
+                      ),
+                    ),
+                  );
+                  // print("Bowl compensation tapped");
+                },
+                onSwitchChanged: (value) {
+                  advancedProvider.setBowlCompensation(value);
+                },
+                title: Text(
+                  'Bowl Compensation',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                subtitle: Text(
+                  advancedProvider.bowlCompensation
+                      ? "${advancedProvider.compPercentage.toString()}%"
+                      : 'Compensate for dough residue',
+                  style: Theme.of(context).textTheme.bodySmall,
+                )
+              ),
             ]
           )
         ),

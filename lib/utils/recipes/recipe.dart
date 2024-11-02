@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pizza_calc/utils/advanced_features.dart';
 import 'package:pizza_calc/utils/yeast/yeast_selector.dart';
 
 enum PizzaType { neapolitan, pan }
@@ -23,6 +24,10 @@ class RecipeProvider with ChangeNotifier {
         hasSugar: false,
         hasFat: false,
         yeastType: YeastType.active,
+        hasPreferment: false,
+        prefermentType: PrefermentType.biga,
+        prefermentPercentage: 20,
+        prefermentHours: 12,
         pizzaType: PizzaType.neapolitan,
         notes: '',
       );
@@ -44,14 +49,22 @@ class RecipeProvider with ChangeNotifier {
         hasSugar: false,
         hasFat: true,
         yeastType: YeastType.active,
+        hasPreferment: false,
+        prefermentType: PrefermentType.poolish,
+        prefermentPercentage: 20,
+        prefermentHours: 12,
         pizzaType: PizzaType.pan,
         notes: '',
       );
+
+    // final AdvancedProvider _advancedProvider;
+    // RecipeProvider(this._advancedProvider);
 
   int get currentIndex => _currentIndex;
   int get currentTab => _currentTab;
   PizzaDoughRecipe get neapolitanRecipe => _neapolitanRecipe;
   PizzaDoughRecipe get panRecipe => _panRecipe;
+  // AdvancedProvider get advancedprovider => _advancedProvider;
 
   void setIndex(int index) {
     _currentIndex = index;
@@ -73,6 +86,14 @@ class RecipeProvider with ChangeNotifier {
     else {
       throw Exception('Invalid pizza type');
     }
+
+    // if (newRecipe.hasPreferment) {
+    //   // Update provider variable
+    //   _advancedProvider.setUsePreferments(true);
+    // }
+    // else {
+    //   _advancedProvider.setUsePreferments(false);
+    // }
     
     // Navigate to homepage
     _currentIndex = 0;
@@ -107,6 +128,10 @@ class PizzaDoughRecipe {
   final bool hasSugar;
   final bool hasFat;
   final YeastType yeastType;
+  final bool hasPreferment;
+  final PrefermentType prefermentType;
+  final int prefermentPercentage;
+  final int prefermentHours;
   final PizzaType pizzaType;
   final String notes;
 
@@ -128,6 +153,10 @@ class PizzaDoughRecipe {
     required this.hasSugar,
     required this.hasFat,
     required this.yeastType,
+    required this.hasPreferment,
+    required this.prefermentType,
+    required this.prefermentPercentage,
+    required this.prefermentHours,
     required this.pizzaType,
     this.notes = '',
   });
@@ -151,6 +180,10 @@ class PizzaDoughRecipe {
       'hasSugar': hasSugar ? 1 : 0,
       'hasFat': hasFat ? 1 : 0,
       'yeastType': yeastType.index,
+      'hasPreferment': hasPreferment ? 1 : 0,
+      'prefermentType': prefermentType.index,
+      'prefermentPercentage': prefermentPercentage,
+      'prefermentHours': prefermentHours,
       'pizzaType': pizzaType.index,
       'notes': notes,
     };
@@ -175,6 +208,10 @@ class PizzaDoughRecipe {
       hasSugar: map['hasSugar'] == 1,
       hasFat: map['hasFat'] == 1,
       yeastType: YeastType.values[map['yeastType']],
+      hasPreferment: map['hasPreferment'] == 1,
+      prefermentType: PrefermentType.values[map['prefermentType']],
+      prefermentPercentage: map['prefermentPercentage'],
+      prefermentHours: map['prefermentHours'],
       pizzaType: PizzaType.values[map['pizzaType']],
       notes: map['notes'],
     );

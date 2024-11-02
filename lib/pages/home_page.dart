@@ -30,12 +30,16 @@ class HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
     IngredientData(label: 'Room temperature', value: 20),
     IngredientData(label: 'Room time', value: 4),
     IngredientData(label: 'Cold temperature', value: 4),
-    IngredientData(label: 'Cold time', value: 24)
+    IngredientData(label: 'Cold time', value: 24),
+    IngredientData(label: 'Preferment percentage', value: 20),
+    IngredientData(label: 'Preferment hours', value: 12)
   ];
 
   static const List<bool> _neapolitanParams = [
-    // hasSugar, hasFat, isMultiStage, yeastType(instant/active), pizzaType (neapolitan/pan)
-    false, false, false, false, true
+    // hasSugar, hasFat, isMultiStage, hasPreferment, 
+    // prefermentType(biga/poolish), yeastType(instant/active), 
+    // pizzaType (neapolitan/pan)
+    false, false, false, false, true, false, true
   ];
 
   static const List<IngredientData> _panIngredients = [
@@ -48,12 +52,16 @@ class HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
     IngredientData(label: 'Room temperature', value: 20),
     IngredientData(label: 'Room time', value: 4),
     IngredientData(label: 'Cold temperature', value: 4),
-    IngredientData(label: 'Cold time', value: 24)
+    IngredientData(label: 'Cold time', value: 24),
+    IngredientData(label: 'Preferment percentage', value: 20),
+    IngredientData(label: 'Preferment hours', value: 12)
   ];
 
   static const List<bool> _panParams = [
-    // hasSugar, hasFat, isMultiStage, yeastType(instant/active), pizzaType (neapolitan/pan)
-    false, false, true, false, false
+    // hasSugar, hasFat, isMultiStage, hasPreferment, 
+    // prefermentType(biga/poolish), yeastType(instant/active), 
+    // pizzaType (neapolitan/pan)
+    false, false, true, false, false, false, false
   ];
 
   // A method to save the current recipe
@@ -61,7 +69,6 @@ class HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
     // Check which tab is currently selected
     
     if (_selectedTab == 0) {
-    // if (Provider.of<RecipeProvider>(context, listen: false).currentTab == 0) {
       // Neapolitan tab
       PizzaDoughRecipe? neapolitanRecipe = _neapolitanIngredientInputKey.currentState?.getRecipeData();
       if (neapolitanRecipe != null) {
@@ -69,7 +76,6 @@ class HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
         await RecipeDatabaseHelper.instance.insertRecipe(neapolitanRecipe);
       }
     } else if (_selectedTab == 1) {
-    // } else if (Provider.of<RecipeProvider>(context, listen: false).currentTab == 1) {
       // Pan Pizza tab
       PizzaDoughRecipe? panRecipe = _panIngredientInputKey.currentState?.getRecipeData();
       if (panRecipe != null) {
@@ -106,7 +112,6 @@ class HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {    
-    // final recipeProvider = Provider.of<RecipeProvider>(context);
     return Consumer<RecipeProvider>(
       builder: (context, recipeProvider, child) {
         return Scaffold(

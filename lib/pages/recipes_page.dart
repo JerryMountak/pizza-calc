@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pizza_calc/utils/advanced_features.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:pizza_calc/utils/recipes/recipe.dart';
@@ -27,8 +28,8 @@ class RecipeDatabaseHelper {
     String dbPath;
 
     // If working on web
-    if (kIsWeb) {
-      log("Detected web environment");
+    if (kIsWeb || Platform.isWindows) {
+      log("Detected web/windows environment");
 
       dbPath = join(await getDatabasesPath(), 'fermentation.db');
 
@@ -37,7 +38,7 @@ class RecipeDatabaseHelper {
       dbExists = await databaseExists(dbPath);
     }
     else {
-      log("No web environment detected");
+      log("Running on Android");
 
       final appDocDir = await getApplicationDocumentsDirectory();
       dbPath = join(appDocDir.path, 'fermentation.db');
@@ -48,8 +49,8 @@ class RecipeDatabaseHelper {
     }
     
     if (!dbExists) {
-      // If working on web
-      if (kIsWeb) {
+      // If working on web or windows
+      if (kIsWeb || Platform.isWindows) {
         try {
           log("Copying database for web from assets");
 
@@ -108,6 +109,10 @@ class RecipeDatabaseHelper {
         hasSugar INTEGER NOT NULL,
         hasFat INTEGER NOT NULL,
         yeastType INTEGER NOT NULL,
+        hasPreferment INTEGER NOT NULL,
+        prefermentType INTEGER NOT NULL,
+        prefermentPercentage INTEGER NOT NULL,
+        prefermentHours INTEGER NOT NULL,
         pizzaType INTEGER NOT NULL,
         notes TEXT
       )
@@ -222,13 +227,15 @@ class RecipesTabState extends State<RecipesTab> {
                     },
                   ),
                   onTap: () {
-                    // Set the selected recipe ID in the provider
-                    // context.read<RecipeState>().selectRecipe(recipe.id!);
-
+                    if (recipe.hasPreferment) {
+                      Provider.of<AdvancedProvider>(context, listen: false).setUsePreferments(true);
+                      Provider.of<AdvancedProvider>(context, listen: false).updatePrefermentType(recipe.prefermentType);
+                    }
+                    else {
+                      Provider.of<AdvancedProvider>(context, listen: false).setUsePreferments(false);
+                      Provider.of<AdvancedProvider>(context, listen: false).updatePrefermentType(recipe.prefermentType);
+                    }
                     Provider.of<RecipeProvider>(context, listen: false).updateRecipe(recipe);
-
-                    // Switch to the desired home tab after navigating back
-                    // context.read<TabController>().index = 0; // Assuming 0 is the index for the home tab
                   }
                 ),
               );

@@ -249,7 +249,34 @@ Future<double> adjustYeast(
   return bestYeast; // Return the best yeast value after maximum iterations
 }
 
-
+double prefermentYeastCalc(double hours) {
+  // Define the known points
+  final List<List<double>> points = [
+    [3.0, 0.015], // 3 hours -> 1.5%
+    [8.0, 0.007],  // 8 hours -> 0.7%
+    [13.0, 0.003], // 13 hours -> 0.3%
+  ];
+  
+  // If hours is before first point or after last point, clamp to nearest value
+  if (hours <= points.first[0]) return points.first[1];
+  if (hours >= points.last[0]) return points.last[1];
+  
+  // Find the two points to interpolate between
+  for (int i = 0; i < points.length - 1; i++) {
+    if (hours >= points[i][0] && hours <= points[i + 1][0]) {
+      double x1 = points[i][0];
+      double y1 = points[i][1];
+      double x2 = points[i + 1][0];
+      double y2 = points[i + 1][1];
+      
+      // Linear interpolation formula: y = y1 + (x - x1) * (y2 - y1) / (x2 - x1)
+      return y1 + (hours - x1) * (y2 - y1) / (x2 - x1);
+    }
+  }
+  
+  // Should never reach here due to earlier bounds checking
+  return 0.0;
+}
 
 Future<double> yeastCalc(
   List<List<double>> fermentationSteps,

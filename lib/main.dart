@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pizza_calc/utils/advanced_features.dart';
 import 'package:pizza_calc/utils/recipes/recipe.dart';
 import 'package:pizza_calc/utils/theme.dart';
 import 'package:provider/provider.dart';
@@ -11,8 +14,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 
 void main() {
-  if (kIsWeb) {
-    // Initialize FFI for web use
+  if (kIsWeb || Platform.isWindows) {
+    // Initialize FFI
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
@@ -24,7 +27,8 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => RecipeProvider())
+        ChangeNotifierProvider(create: (_) => RecipeProvider()),
+        ChangeNotifierProvider(create: (_) => AdvancedProvider()),
       ],
       child: const MyApp()
     )

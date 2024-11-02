@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:pizza_calc/utils/advanced_features.dart';
 import 'package:pizza_calc/utils/recipes/recipe.dart';
 import 'package:pizza_calc/utils/recipes/recipe_ingredients.dart';
 import 'package:pizza_calc/utils/yeast/yeast_calc.dart';
@@ -38,6 +39,10 @@ class IngredientInputState extends State<IngredientInput> {
   late bool _hasSugar;
   late bool _hasFat;
   late YeastType _yeastType;
+  late bool _hasPreferment;
+  late PrefermentType _prefermentType;
+  late int _prefermentPercentage;
+  late int _prefermentHours;
   late PizzaType _pizzaType;
 
   // Variables for calculated results
@@ -47,12 +52,23 @@ class IngredientInputState extends State<IngredientInput> {
   double _yeast = 0;
   double _sugar = 0;
   double _fat = 0;
+  double _prefermentFlour = 0;
+  double _prefermentWater = 0;
+  double _prefermentYeast = 0;
+  double _totalFlour = 0;
 
-  // List of ingredients
+  // List of ingredients (main dough)
   List<IngredientData> ingredients = [
     const IngredientData(label: 'Flour', value: 0),
     const IngredientData(label: 'Water', value: 0),
     const IngredientData(label: 'Salt', value: 0),
+    const IngredientData(label: 'Yeast', value: 0),
+  ];
+
+  // List of ingredients (preferment dough)
+  List<IngredientData> prefermentIngredients = [
+    const IngredientData(label: 'Flour', value: 0),
+    const IngredientData(label: 'Water', value: 0),
     const IngredientData(label: 'Yeast', value: 0),
   ];
 
@@ -71,6 +87,8 @@ class IngredientInputState extends State<IngredientInput> {
   late TextEditingController rtHoursController;
   late TextEditingController ctController;
   late TextEditingController ctHoursController;
+  late TextEditingController prefPercentageController;
+  late TextEditingController prefHoursController;
 
   late List<TextEditingController> controllers;
 
@@ -119,13 +137,23 @@ class IngredientInputState extends State<IngredientInput> {
         .firstWhere((i) => i.label == 'Cold time')
         .value
         .toInt();
+    _prefermentPercentage = widget.initialIngredients
+        .firstWhere((i) => i.label == 'Preferment percentage')
+        .value
+        .toInt();
+    _prefermentHours = widget.initialIngredients
+        .firstWhere((i) => i.label == 'Preferment hours')
+        .value
+        .toInt();
 
     // Initialize other local variables from widget.initialParams
     _isMultiStage = widget.initialParams[0];
     _hasSugar = widget.initialParams[1];
     _hasFat = widget.initialParams[2];
-    _yeastType = widget.initialParams[3] ? YeastType.instant : YeastType.active;
-    _pizzaType = widget.initialParams[4] ? PizzaType.neapolitan : PizzaType.pan;
+    _hasPreferment = widget.initialParams[3];
+    _prefermentType = widget.initialParams[4] ? PrefermentType.biga : PrefermentType.poolish;
+    _yeastType = widget.initialParams[5] ? YeastType.instant : YeastType.active;
+    _pizzaType = widget.initialParams[6] ? PizzaType.neapolitan : PizzaType.pan;
 
     // Initialize controllers
     doughBallController = TextEditingController(text: _doughBalls.toString());
@@ -139,6 +167,8 @@ class IngredientInputState extends State<IngredientInput> {
     rtHoursController = TextEditingController(text: _rtHours.toString());
     ctController = TextEditingController(text: _ct.toString());
     ctHoursController = TextEditingController(text: _ctHours.toString());
+    prefPercentageController = TextEditingController(text: _prefermentPercentage.toString());
+    prefHoursController = TextEditingController(text: _prefermentHours.toString());
 
     // Initialize controllers list
     controllers = [
@@ -152,7 +182,9 @@ class IngredientInputState extends State<IngredientInput> {
       rtController,
       rtHoursController,
       ctController,
-      ctHoursController
+      ctHoursController,
+      prefPercentageController,
+      prefHoursController,
     ];
 
     _calculateIngredients();
@@ -190,6 +222,8 @@ class IngredientInputState extends State<IngredientInput> {
       _hasSugar = recipe.hasSugar;
       _hasFat = recipe.hasFat;
       _yeastType = recipe.yeastType;
+      _hasPreferment = recipe.hasPreferment;
+      _prefermentType = recipe.prefermentType;
       _pizzaType = recipe.pizzaType;
 
       // Update text controllers
@@ -222,23 +256,40 @@ class IngredientInputState extends State<IngredientInput> {
 
   // Function to calculate the ingredients with added debug info
   void _calculateIngredients() async {
-    final startTime = DateTime.now();
-    log("Ingredient calculation started at: $startTime");
+    // final startTime = DateTime.now();
+    // log("Ingredient calculation started at: $startTime");
 
     // Calculate total dough weight
     int totalWeight = _doughBalls * _ballWeight;
+    // TODO: add optional bowl residue compensation
     log("Total dough weight: $totalWeight");
 
     // Perform ingredient calculations
     _flour = totalWeight / (1 + _hydration / 100 + _saltPercentage / 100 + 
         (_hasSugar ? _sugarPercentage / 100 : 0) + 
         (_hasFat ? _fatPercentage / 100 : 0));
+    _totalFlour = _flour;
     _water = _flour * _hydration / 100;
     _salt = _flour * _saltPercentage / 100;
     _sugar = _flour * (_hasSugar ? _sugarPercentage / 100 : 0);
     _fat = _flour * (_hasFat ? _fatPercentage / 100 : 0);
 
+    // Calculate preferment ingredients if needed
+    _hasPreferment = Provider.of<AdvancedProvider>(context, listen: false).usePreferments;
+    _prefermentType = Provider.of<AdvancedProvider>(context, listen: false).prefermentType;
+    if (_hasPreferment) {
+      _prefermentFlour = _flour * _prefermentPercentage / 100;
+      _prefermentWater = (_prefermentType == PrefermentType.biga) ? _prefermentFlour * 0.5 : _prefermentFlour;
+
+      // Remove preferment ingredients from total flour
+      _flour -= _prefermentFlour;
+      _water -= _prefermentWater;
+    }
+
     log("Calculated flour: $_flour, water: $_water, salt: $_salt, sugar: $_sugar, fat: $_fat");
+    if(_hasPreferment) {
+      log("Calculated preferment flour: $_prefermentFlour, water: $_prefermentWater");
+    }
 
     // Determine yeast type
     String yeastType = _yeastType == YeastType.active ? 'active' : 'instant';
@@ -255,17 +306,30 @@ class IngredientInputState extends State<IngredientInput> {
 
     try {
       await DatabaseHelper().loadLookupTable(yeastType);
-      List<Map<String, dynamic>> lookupTable =
-          DatabaseHelper().getCachedLookupTable('active');
+      // List<Map<String, dynamic>> lookupTable = DatabaseHelper().getCachedLookupTable('active');
+      List<Map<String, dynamic>> lookupTable = DatabaseHelper().getCachedLookupTable(yeastType);
 
       double yeastAmount = await yeastCalc(
         fermentationSteps, 
         lookupTable,
         initialYeast: _yeastPercentage
       );
-      _yeast = _flour * yeastAmount / 100;
+      _yeast = _totalFlour * yeastAmount / 100;
+      
+      if (_hasPreferment) {
+        if (_prefermentType == PrefermentType.biga) {
+          _prefermentYeast = _prefermentFlour * 0.003;
+        }
+        else {
+          _prefermentYeast = _prefermentFlour * prefermentYeastCalc(_prefermentHours.toDouble());
+        }
+        _yeast -= _prefermentYeast;
+      }
 
       log("Yeast percentage: $yeastAmount, Calculated yeast: $_yeast");
+      if (_hasPreferment) {
+        log("Calculated preferment yeast: $_prefermentYeast");
+      }
     } catch (e) {
       log("Error during yeast calculation: $e");
     }
@@ -282,6 +346,14 @@ class IngredientInputState extends State<IngredientInput> {
         if (_hasFat) IngredientData(label: "Fat", value: _fat),
         IngredientData(label: "Yeast", value: _yeast),
       ];
+
+      if (_hasPreferment) {
+        prefermentIngredients = [
+          IngredientData(label: "Flour", value: _prefermentFlour),
+          IngredientData(label: "Water", value: _prefermentWater),
+          IngredientData(label: "Yeast", value: _prefermentYeast),
+        ];
+      }
 
       // Update recipe state
       _recipe = PizzaDoughRecipe(
@@ -301,6 +373,10 @@ class IngredientInputState extends State<IngredientInput> {
         hasSugar: _hasSugar,
         hasFat: _hasFat,
         yeastType: _yeastType,
+        hasPreferment: Provider.of<AdvancedProvider>(context, listen: false).usePreferments,
+        prefermentType: Provider.of<AdvancedProvider>(context, listen: false).prefermentType,
+        prefermentPercentage: _prefermentPercentage,
+        prefermentHours: _prefermentHours,
         pizzaType: _pizzaType,
       );
     });
@@ -328,479 +404,537 @@ class IngredientInputState extends State<IngredientInput> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-
-    return Center(
+    return Consumer<AdvancedProvider>(builder: (context, advancedProvider, child) { 
+      return Center(
         child: SingleChildScrollView(
-            child:
-                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      // Dough Details
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5.0),
-        child: Card(
-          child: SizedBox(
-            width: screenWidth * 0.9,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 5),
-                  Text(
-                    'Dough Details',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Column(children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 15.0),
-                      child: SizedBox(
-                        width: screenWidth * 0.8,
-                        child: TextField(
-                          controller: doughBallController,
-                          onChanged: (value) {
-                            // if (value.isNotEmpty) {
-                            //   _doughBalls = int.parse(value);
-                            //   _calculateIngredients();
-                            // }
-                            _onInputChanged(value, int.parse, (value) => _doughBalls = value.toInt());
-                          },
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'No. of dough balls',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 15.0),
-                      child: SizedBox(
-                        width: screenWidth * 0.8,
-                        child: TextField(
-                          controller: ballWeightController,
-                          onChanged: (value) {
-                            // if (value.isNotEmpty) {
-                            //   _ballWeight = int.parse(value);
-                            //   _calculateIngredients();
-                            // }
-                            _onInputChanged(value, int.parse, (value) => _ballWeight = value.toInt());
-                          },
-                          decoration: const InputDecoration(
-                            labelText: 'Ball Weight (g)',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ]),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-      // const SizedBox(height: 10),
-
-      // Hydration
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5.0),
-        child: Card(
-          child: SizedBox(
-            width: screenWidth * 0.9,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 5),
-                  Text(
-                    'Water',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Column(children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 15.0),
-                      child: SizedBox(
-                        width: screenWidth * 0.8,
-                        child: TextField(
-                          controller: hydrationController,
-                          onChanged: (value) {
-                            // if (value.isNotEmpty) {
-                            //   _hydration = int.parse(value);
-                            //   _calculateIngredients();
-                            // }
-                            _onInputChanged(value, int.parse, (value) => _hydration = value.toInt());
-                          },
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Hydration (%)',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ]),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-      // const SizedBox(height: 10),
-
-      // Salt
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5.0),
-        child: Card(
-          child: SizedBox(
-            width: screenWidth * 0.9,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 5),
-                  Text(
-                    'Salt',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Column(children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 15.0),
-                      child: SizedBox(
-                        width: screenWidth * 0.8,
-                        child: TextField(
-                          controller: saltPercentageController,
-                          onChanged: (value) {
-                            // if (value.isNotEmpty) {
-                            //   _saltPercentage = double.parse(value);
-                            //   _calculateIngredients();
-                            // }
-                            _onInputChanged(value, double.parse, (value) => _saltPercentage = value.toDouble());
-                          },
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Salt (%)',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ]),
-                ],
-              ),
-            ),
-          )
-        ),
-      ),
-      // const SizedBox(height: 10),
-
-      // Optional Ingredients
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5.0),
-        child: Card(
-          child: SizedBox(
-            width: screenWidth * 0.9,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 5),
-                  Text(
-                    'Optional',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Column(children: [
-                    SwitchListTile(
-                      title: const Text('Sugar'),
-                      value: _hasSugar,
-                      onChanged: (bool value) {
-                        setState(() {
-                          _hasSugar = value;
-                          if (value) {
-                            ingredients.add(
-                              IngredientData(label: 'Sugar', value: _sugar),
-                            );
-                            log('Ingredient added: ${ingredients.length}');
-                          }
-                          else {
-                            ingredients.removeWhere((element) => element.label == 'Sugar');
-                            log('Ingredient removed:${ingredients.length}');
-                          }
-                        });
-                        _calculateIngredients();
-                      },
-                      activeColor: Theme.of(context).colorScheme.primary,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    ),
-                    SwitchListTile(
-                      title: const Text('Fat'),
-                      value: _hasFat,
-                      onChanged: (bool value) {
-                        setState(() {
-                          _hasFat = value;
-                          if (value) {
-                            ingredients.add(
-                              IngredientData(label: 'Fat', value: _fat),
-                            );
-                          }
-                          else {
-                            ingredients.removeWhere((element) => element.label == 'Fat');
-                          }
-                        });
-                        _calculateIngredients();
-                      },
-                      activeColor: Theme.of(context).colorScheme.primary,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    ),
-                    _hasSugar
-                      ? Padding(
-                          padding: const EdgeInsets.only(bottom: 15.0),
-                          child: SizedBox(
-                            width: screenWidth * 0.8,
-                            child: TextField(
-                              controller: sugarController,
-                              onChanged: (value) {
-                                // if (value.isNotEmpty) {
-                                //   _sugarPercentage = double.parse(value);
-                                //   _calculateIngredients();
-                                // }
-                                _onInputChanged(value, double.parse, (value) => _sugarPercentage = value.toDouble());
-                              },
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                labelText: 'Sugar (%)',
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                          ),
-                        )
-                      : const SizedBox(height: 0),
-                    _hasFat
-                      ? Padding(
-                          padding: const EdgeInsets.only(bottom: 15.0),
-                          child: SizedBox(
-                            width: screenWidth * 0.8,
-                            child: TextField(
-                              controller: fatController,
-                              onChanged: (value) {
-                                // if (value.isNotEmpty) {
-                                //   _fatPercentage = double.parse(value);
-                                //   _calculateIngredients();
-                                // }
-                                _onInputChanged(value, double.parse, (value) => _fatPercentage = value.toDouble());
-                              },
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                labelText: 'Fat (%)',
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                          ),
-                        )
-                      : const SizedBox(height: 0)
-                  ]),
-                ],
-              ),
-            ),
-          )
-        ),
-      
-      ),
-      // const SizedBox(height: 10),
-      
-      // Fermentation
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5.0),
-        child: Card(
-          child: SizedBox(
-            width: screenWidth * 0.9,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 5),
-                  Text(
-                    'Fermentation',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Column(children: [
-                    YeastSelector(
-                        initialValue: YeastType.active,
-                        onYeastTypeChanged: (YeastType newType) {
-                          setState(() {
-                            _yeastType = newType;
-                          });
-                          _calculateIngredients();
-                        }),
-                    // Multi-Stage Fermentation Switch
-                    SwitchListTile(
-                      title: const Text('Multi-Stage Fermentation'),
-                      value: _isMultiStage,
-                      onChanged: (bool value) {
-                        setState(() {
-                          _isMultiStage = value;
-                        });
-                        _calculateIngredients();
-                      },
-                      activeColor: Theme.of(context).colorScheme.primary,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 8.0),
-                      child: Row(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center, 
+            children: [
+              // Dough Details
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                child: Card(
+                  child: SizedBox(
+                    width: screenWidth * 0.9,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Expanded(
-                            child: TextField(
-                              controller: rtController,
-                              onChanged: (value) {
-                                // if (value.isNotEmpty) {
-                                //   _rt = double.parse(value);
-                                //   _calculateIngredients();
-                                // }
-                                _onInputChanged(value, double.parse, (value) => _rt = value.toDouble());
-                              },
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                labelText: 'RT (°C)',
-                                border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                              ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'Dough Details',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: TextField(
-                              controller: rtHoursController,
-                              onChanged: (value) {
-                                // if (value.isNotEmpty) {
-                                //   _rtHours = int.parse(value);
-                                //   _calculateIngredients();
-                                // }
-                                _onInputChanged(value, int.parse, (value) => _rtHours = value.toInt());
-                              },
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                labelText: 'Hours',
-                                border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
+                          const SizedBox(height: 10),
+                          Column(children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 15.0),
+                              child: SizedBox(
+                                width: screenWidth * 0.8,
+                                child: TextField(
+                                  controller: doughBallController,
+                                  onChanged: (value) {
+                                    // if (value.isNotEmpty) {
+                                    //   _doughBalls = int.parse(value);
+                                    //   _calculateIngredients();
+                                    // }
+                                    _onInputChanged(value, int.parse, (value) => _doughBalls = value.toInt());
+                                  },
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(
+                                    labelText: 'No. of dough balls',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 15.0),
+                              child: SizedBox(
+                                width: screenWidth * 0.8,
+                                child: TextField(
+                                  controller: ballWeightController,
+                                  onChanged: (value) {
+                                    // if (value.isNotEmpty) {
+                                    //   _ballWeight = int.parse(value);
+                                    //   _calculateIngredients();
+                                    // }
+                                    _onInputChanged(value, int.parse, (value) => _ballWeight = value.toInt());
+                                  },
+                                  decoration: const InputDecoration(
+                                    labelText: 'Ball Weight (g)',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ]),
                         ],
                       ),
                     ),
-                    _isMultiStage
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20.0, vertical: 8.0),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: ctController,
-                                  onChanged: (value) {
-                                    // if (value.isNotEmpty) {
-                                    //   _ct = int.parse(value);
-                                    //   _calculateIngredients();
-                                    // }
-                                    _onInputChanged(value, int.parse, (value) => _ct = value.toInt());
-                                  },
-                                  keyboardType: TextInputType.number,
-                                  decoration: const InputDecoration(
-                                    labelText: 'CT (°C)',
-                                    border: OutlineInputBorder(),
-                                    contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 8),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: TextField(
-                                  controller: ctHoursController,
-                                  onChanged: (value) {
-                                    // if (value.isNotEmpty) {
-                                    //   _ctHours = int.parse(value);
-                                    //   _calculateIngredients();
-                                    // }
-                                    _onInputChanged(value, int.parse, (value) => _ctHours = value.toInt());
-                                  },
-                                  keyboardType: TextInputType.number,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Hours',
-                                    border: OutlineInputBorder(),
-                                    contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 8),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : const SizedBox(height: 0)
-                  ]),
-                ],
+                  ),
+                ),
               ),
-            ),
-          )
-        ),
-      ),
 
-      // Final Ingredients
-      // const Divider(height: 10, thickness: 5),
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10.0),
-        child: Card(
-          child: SizedBox(
-            width: screenWidth * 0.9,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 5),
-                  Text(
-                    'Final Dough Ingredients',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
+              // Hydration
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                child: Card(
+                  child: SizedBox(
+                    width: screenWidth * 0.9,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 5),
+                          Text(
+                            'Water',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Column(children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 15.0),
+                              child: SizedBox(
+                                width: screenWidth * 0.8,
+                                child: TextField(
+                                  controller: hydrationController,
+                                  onChanged: (value) {
+                                    // if (value.isNotEmpty) {
+                                    //   _hydration = int.parse(value);
+                                    //   _calculateIngredients();
+                                    // }
+                                    _onInputChanged(value, int.parse, (value) => _hydration = value.toInt());
+                                  },
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Hydration (%)',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ]),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  RecipeIngredients(initialIngredients: ingredients)
-                ],
+                ),
               ),
-            ),
-          ),
-        ),
-      ),
-      
-      const SizedBox(height: 80),
-    ])));
+
+              // Salt
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                child: Card(
+                  child: SizedBox(
+                    width: screenWidth * 0.9,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 5),
+                          Text(
+                            'Salt',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Column(children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 15.0),
+                              child: SizedBox(
+                                width: screenWidth * 0.8,
+                                child: TextField(
+                                  controller: saltPercentageController,
+                                  onChanged: (value) {
+                                    // if (value.isNotEmpty) {
+                                    //   _saltPercentage = double.parse(value);
+                                    //   _calculateIngredients();
+                                    // }
+                                    _onInputChanged(value, double.parse, (value) => _saltPercentage = value.toDouble());
+                                  },
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Salt (%)',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ]),
+                        ],
+                      ),
+                    ),
+                  )
+                ),
+              ),
+
+              // Optional Ingredients
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                child: Card(
+                  child: SizedBox(
+                    width: screenWidth * 0.9,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 5),
+                          Text(
+                            'Optional',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Column(children: [
+                            SwitchListTile(
+                              title: const Text('Sugar'),
+                              value: _hasSugar,
+                              onChanged: (bool value) {
+                                setState(() {
+                                  _hasSugar = value;
+                                  if (value) {
+                                    ingredients.add(
+                                      IngredientData(label: 'Sugar', value: _sugar),
+                                    );
+                                    log('Ingredient added: ${ingredients.length}');
+                                  }
+                                  else {
+                                    ingredients.removeWhere((element) => element.label == 'Sugar');
+                                    log('Ingredient removed:${ingredients.length}');
+                                  }
+                                });
+                                _calculateIngredients();
+                              },
+                              activeColor: Theme.of(context).colorScheme.primary,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            ),
+                            SwitchListTile(
+                              title: const Text('Fat'),
+                              value: _hasFat,
+                              onChanged: (bool value) {
+                                setState(() {
+                                  _hasFat = value;
+                                  if (value) {
+                                    ingredients.add(
+                                      IngredientData(label: 'Fat', value: _fat),
+                                    );
+                                  }
+                                  else {
+                                    ingredients.removeWhere((element) => element.label == 'Fat');
+                                  }
+                                });
+                                _calculateIngredients();
+                              },
+                              activeColor: Theme.of(context).colorScheme.primary,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            ),
+                            _hasSugar
+                              ? Padding(
+                                  padding: const EdgeInsets.only(bottom: 15.0),
+                                  child: SizedBox(
+                                    width: screenWidth * 0.8,
+                                    child: TextField(
+                                      controller: sugarController,
+                                      onChanged: (value) {
+                                        // if (value.isNotEmpty) {
+                                        //   _sugarPercentage = double.parse(value);
+                                        //   _calculateIngredients();
+                                        // }
+                                        _onInputChanged(value, double.parse, (value) => _sugarPercentage = value.toDouble());
+                                      },
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Sugar (%)',
+                                        border: OutlineInputBorder(),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox(height: 0),
+                            _hasFat
+                              ? Padding(
+                                  padding: const EdgeInsets.only(bottom: 15.0),
+                                  child: SizedBox(
+                                    width: screenWidth * 0.8,
+                                    child: TextField(
+                                      controller: fatController,
+                                      onChanged: (value) {
+                                        // if (value.isNotEmpty) {
+                                        //   _fatPercentage = double.parse(value);
+                                        //   _calculateIngredients();
+                                        // }
+                                        _onInputChanged(value, double.parse, (value) => _fatPercentage = value.toDouble());
+                                      },
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Fat (%)',
+                                        border: OutlineInputBorder(),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox(height: 0)
+                          ]),
+                        ],
+                      ),
+                    ),
+                  )
+                ),
+              
+              ),
+              
+              // Fermentation
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                child: Card(
+                  child: SizedBox(
+                    width: screenWidth * 0.9,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 5),
+                          Text(
+                            'Fermentation',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Column(children: [
+                            YeastSelector(
+                              initialValue: YeastType.active,
+                              onYeastTypeChanged: (YeastType newType) {
+                                setState(() {
+                                  _yeastType = newType;
+                                });
+                                _calculateIngredients();
+                              }
+                            ),
+                            // Multi-Stage Fermentation Switch
+                            SwitchListTile(
+                              title: const Text('Multi-Stage Fermentation'),
+                              value: _isMultiStage,
+                              onChanged: (bool value) {
+                                setState(() {
+                                  _isMultiStage = value;
+                                });
+                                _calculateIngredients();
+                              },
+                              activeColor: Theme.of(context).colorScheme.primary,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: rtController,
+                                      onChanged: (value) {
+                                        _onInputChanged(value, double.parse, (value) => _rt = value.toDouble());
+                                      },
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        labelText: 'RT (°C)',
+                                        border: OutlineInputBorder(),
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 8),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: TextField(
+                                      controller: rtHoursController,
+                                      onChanged: (value) {
+                                        _onInputChanged(value, int.parse, (value) => _rtHours = value.toInt());
+                                      },
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Hours',
+                                        border: OutlineInputBorder(),
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 8),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            _isMultiStage
+                              ? Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextField(
+                                          controller: ctController,
+                                          onChanged: (value) {
+                                            _onInputChanged(value, int.parse, (value) => _ct = value.toInt());
+                                          },
+                                          keyboardType: TextInputType.number,
+                                          decoration: const InputDecoration(
+                                            labelText: 'CT (°C)',
+                                            border: OutlineInputBorder(),
+                                            contentPadding: EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 8),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: TextField(
+                                          controller: ctHoursController,
+                                          onChanged: (value) {
+                                            _onInputChanged(value, int.parse, (value) => _ctHours = value.toInt());
+                                          },
+                                          keyboardType: TextInputType.number,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Hours',
+                                            border: OutlineInputBorder(),
+                                            contentPadding: EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 8),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : const SizedBox(height: 0),
+                            advancedProvider.usePreferments
+                              ? Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        advancedProvider.prefermentType.displayName
+                                      ),
+                                      const SizedBox(height: 10,),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: TextField(
+                                              controller: prefPercentageController,
+                                              onChanged: (value) {
+                                                _onInputChanged(value, int.parse, (value) => _prefermentPercentage = value.toInt());
+                                              },
+                                              keyboardType: TextInputType.number,
+                                              decoration: const InputDecoration(
+                                                labelText: 'Preferment (%)',
+                                                border: OutlineInputBorder(),
+                                                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: TextField(
+                                              controller: prefHoursController,
+                                              onChanged: (value) {
+                                                _onInputChanged(value, int.parse, (value) => _prefermentHours = value.toInt());
+                                              },
+                                              keyboardType: TextInputType.number,
+                                              decoration: const InputDecoration(
+                                                labelText: 'Hours',
+                                                border: OutlineInputBorder(),
+                                                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  )
+                                )
+                              : const SizedBox(height: 0),
+                          ]),
+                        ],
+                      ),
+                    ),
+                  )
+                ),
+              ),
+
+              // Final Ingredients
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: Card(
+                  child: SizedBox(
+                    width: screenWidth * 0.9,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 5),
+                          Text(
+                            'Final Dough Ingredients',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          _hasPreferment
+                            ? Text(
+                                advancedProvider.prefermentType.displayName,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                  fontSize: 14,
+                                ),
+                              )
+                            : const SizedBox(height: 0),
+                          _hasPreferment
+                            ? RecipeIngredients(initialIngredients: prefermentIngredients)
+                            : const SizedBox(height: 0),
+                          _hasPreferment
+                            ? const Divider(
+                                indent: 16,
+                                endIndent: 16,
+                              )
+                            : const SizedBox(height: 0),
+                          _hasPreferment
+                            ? Text(
+                                'Main Dough',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                  fontSize: 14,
+                                ),
+                              )
+                            : const SizedBox(height: 0),
+                          RecipeIngredients(initialIngredients: ingredients)
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 80),
+            ]
+          )
+        )
+      );
+    });
   }
 }

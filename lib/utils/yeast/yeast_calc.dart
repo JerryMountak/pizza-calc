@@ -4,7 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:io';
 import 'dart:async';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart';
 
 import 'dart:developer'; // For logging
 
@@ -27,9 +27,9 @@ class DatabaseHelper {
     bool dbExists;
     String dbPath;
 
-    // If working on web
-    if (kIsWeb) {
-      log("Detected web environment");
+    // If working on web or windows
+    if (kIsWeb || Platform.isWindows) {
+      log("Detected web/windows environment");
 
       dbPath = join(await getDatabasesPath(), 'fermentation.db');
 
@@ -49,8 +49,8 @@ class DatabaseHelper {
     }
 
     if (!dbExists) {
-      // If working on web
-      if (kIsWeb) {
+      // If working on web or windows
+      if (kIsWeb || Platform.isWindows) {
         try {
           log("Copying database for web from assets");
 
@@ -190,10 +190,10 @@ Future<double> adjustYeast(
   }
 ) async {
   double yeast = initialYeast;
-  double bestYeast = initialYeast; // To track the best yeast value found
-  double bestPercentage = double.infinity; // To track the best total percentage found
-  final Set<double> previousResults = {}; // To store previous total percentage
-  int iteration = 0; // To count iterations for debugging
+  double bestYeast = initialYeast;          // To track the best yeast value found
+  double bestPercentage = double.infinity;  // To track the best total percentage found
+  final Set<double> previousYeastValues = {};   // To store previous yeast values
+  int iteration = 0;                        // To count iterations for debugging
 
   while (iteration < 20) {
     double totalPercentage = 0.0;
@@ -219,18 +219,21 @@ Future<double> adjustYeast(
     }
 
     if ((totalPercentage - 100).abs() < tolerance) {
-      log("Desired percentage achieved within tolerance: $totalPercentage");
+      log("Desired percentage achieved within tolerance: ${(totalPercentage - 100).abs()}");
       return yeast; // Break if we are within the tolerance
     }
 
-    // Check for ocsilation in results
-    if (previousResults.contains(totalPercentage)) {
-      log("Oscillation detected, best total percentage $bestPercentage, returning best yeast value: $bestYeast");
+    // Check for oscillation in yeast values (with small tolerance for floating point comparison)
+    bool oscillationDetected = previousYeastValues.any(
+      (previousYeast) => (previousYeast - yeast).abs() < 0.0001
+    );
+    
+    if (oscillationDetected) {
+      log("Oscillation detected in yeast values, best total percentage $bestPercentage, returning best yeast value: $bestYeast");
       return bestYeast; // Return the best yeast value found
-    }
-    else {
-      // Store the current total percentage in the previous percentages list
-      previousResults.add(totalPercentage);
+    } else {
+      // Store the current yeast value
+      previousYeastValues.add(yeast);
     }
 
     // Adjust yeast based on the total percentage
@@ -239,10 +242,9 @@ Future<double> adjustYeast(
     } else {
       yeast -= 0.02; // Decrease yeast
     }
-
     iteration++; // Increment the iteration count
   }
-
+  
   log("Reached maximum iterations. Best yeast value: $bestYeast");
   return bestYeast; // Return the best yeast value after maximum iterations
 }

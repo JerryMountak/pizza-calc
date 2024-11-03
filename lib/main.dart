@@ -59,10 +59,22 @@ class MyApp extends StatelessWidget {
             return MaterialApp(
               title: 'PizzaCalc',
               theme: ThemeData(
+                pageTransitionsTheme: const PageTransitionsTheme(
+                  builders: <TargetPlatform, PageTransitionsBuilder>{
+                    // Set the predictive back transitions for Android.
+                    TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+                  },
+                ),
                 useMaterial3: true,
                 colorScheme: lightScheme,
               ),
               darkTheme: ThemeData(
+                pageTransitionsTheme: const PageTransitionsTheme(
+                  builders: <TargetPlatform, PageTransitionsBuilder>{
+                    // Set the predictive back transitions for Android.
+                    TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+                  },
+                ),
                 useMaterial3: true,
                 colorScheme: darkScheme,
               ),

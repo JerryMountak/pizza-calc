@@ -207,17 +207,27 @@ class RecipesTabState extends State<RecipesTab> {
               final recipe = recipes[index];
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: Theme.of(context).colorScheme.surfaceContainer,
                 child: ListTile(
-                  title: Text(recipe.name, style: const TextStyle(fontWeight: FontWeight.bold),),
+                  title: Text(
+                    recipe.name, 
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   subtitle: Text(
                     'Balls: ${recipe.doughBalls}x${recipe.ballWeight}g, '
                     'Hydration: ${recipe.hydration}%\n'
                     'RT: ${recipe.roomTempHours}h at ${recipe.roomTemp}°C'
-                    '${recipe.isMultiStage ? 
-                      ', CT: ${recipe.controlledTempHours}h at ${recipe.controlledTemp}°C' 
-                      : ''}'
+                    '${recipe.isMultiStage 
+                      ? ', CT: ${recipe.controlledTempHours}h at ${recipe.controlledTemp}°C' 
+                      : ''
+                      }'
                   ),
-                  leading: const Icon(Icons.local_pizza_rounded),
+                  leading: Icon(
+                    Icons.local_pizza_rounded,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ), 
                   trailing: IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () async {
@@ -253,5 +263,5 @@ class RecipesTabState extends State<RecipesTab> {
         },
       )
     );
-      }
+  }
 }

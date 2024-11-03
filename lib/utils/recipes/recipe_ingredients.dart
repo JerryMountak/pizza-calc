@@ -69,10 +69,8 @@ class RecipeIngredientsState extends State<RecipeIngredients> {
       crossAxisCount += 1;
     }
 
-    // Smaller padding (3% of screen width instead of 4%)
     final padding = screenWidth * 0.03;
 
-    // Reduced aspect ratio for smaller pills
     final aspectRatio = isPortrait ? 1.8 : 2.0;
 
     return Padding(
@@ -107,17 +105,17 @@ class RecipeIngredientsState extends State<RecipeIngredients> {
       BuildContext context, String label, String value, double screenWidth) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Reduced font sizes
+    // Font sizes
     final labelSize = screenWidth * 0.025;
     final valueSize = screenWidth * 0.035;
     final unitSize = screenWidth * 0.025;
 
-    // Adjusted min/max font sizes
+    // min/max font sizes
     final double finalLabelSize = labelSize.clamp(11.0, 14.0);
     final double finalValueSize = valueSize.clamp(14.0, 20.0);
     final double finalUnitSize = unitSize.clamp(11.0, 14.0);
 
-    // Smaller border radius
+    // Border radius
     final borderRadius = screenWidth * 0.03.clamp(15.0, 25.0);
 
     return Container(
@@ -137,7 +135,7 @@ class RecipeIngredientsState extends State<RecipeIngredients> {
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith( 
               color: colorScheme.onPrimaryContainer,
               fontSize: finalLabelSize,
             ),
@@ -151,17 +149,17 @@ class RecipeIngredientsState extends State<RecipeIngredients> {
             children: [
               Text(
                 value,
-                style: TextStyle(
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith( 
+                  color: colorScheme.onPrimaryContainer,
                   fontSize: finalValueSize,
                   fontWeight: FontWeight.bold,
-                  color: colorScheme.onPrimaryContainer,
                 ),
               ),
               Text(
                 ' g',
-                style: TextStyle(
-                  fontSize: finalUnitSize,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith( 
                   color: colorScheme.onPrimaryContainer,
+                  fontSize: finalUnitSize,
                 ),
               ),
             ],

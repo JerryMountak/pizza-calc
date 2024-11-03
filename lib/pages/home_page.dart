@@ -117,19 +117,22 @@ class HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            title: const Text("PizzaCalc"),
+            title: Text(
+              "PizzaCalc",
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             bottom: TabBar(
-                controller: _tabController,
-                tabs: const [
-                  Tab(text: 'Neapolitan'),
-                  Tab(text: 'Pan Pizza'),
-                ],
-                onTap: (index) {
-                  recipeProvider.setTab(index);
-                  setState(() {
-                    _selectedTab = index;
-                  });
-                },
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Neapolitan'),
+                Tab(text: 'Pan Pizza'),
+              ],
+              onTap: (index) {
+                recipeProvider.setTab(index);
+                setState(() {
+                  _selectedTab = index;
+                });
+              },
             )
           ),
           body: TabBarView(
@@ -149,13 +152,18 @@ class HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
           ),
           floatingActionButton: FloatingActionButton.small(
             tooltip: 'Save Recipe',
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+            foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
             onPressed: () {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
                   String recipeName = '';
                   return AlertDialog(
-                    title: const Text('Recipe name'),
+                    title: Text(
+                      'Recipe name',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                     content: TextField(
                       autofocus: true,
                       onChanged: (value) {

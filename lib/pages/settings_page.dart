@@ -62,7 +62,11 @@ class SettingsTabState extends State<SettingsTab> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
               ),
 
-              const Divider(indent: 24,endIndent: 24,),
+              Divider(
+                indent: 24,
+                endIndent: 24, 
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
 
               // Advanced Features
               Padding(

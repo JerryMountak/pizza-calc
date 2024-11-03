@@ -32,9 +32,11 @@ class _YeastSelectorState extends State<YeastSelector> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
+          Text(
             'Yeast Type',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(width: 10),
           SegmentedButton<YeastType>(

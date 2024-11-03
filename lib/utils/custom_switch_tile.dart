@@ -38,11 +38,12 @@ class CustomSwitchTile extends StatelessWidget {
           ),
         ),
         // Vertical separator
-        const SizedBox(
+        SizedBox(
           height: 32,
           child: VerticalDivider(
             width: 16,
             thickness: 1,
+            color: Theme.of(context).colorScheme.outlineVariant,
           ),
         ),
         // Switch area

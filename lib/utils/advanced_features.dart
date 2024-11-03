@@ -133,7 +133,7 @@ class _PrefermentSelectorState extends State<PrefermentSelector> {
                     ],
                   ),
                 ),
-                const Divider(),
+                Divider(color: Theme.of(context).colorScheme.outlineVariant),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -296,7 +296,7 @@ class _CompensationSelectorState extends State<CompensationSelector> {
                     ],
                   ),
                 ),
-                const Divider(),
+                Divider(color: Theme.of(context).colorScheme.outlineVariant),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -519,7 +519,7 @@ class _TangzhongSelectorState extends State<TangzhongSelector> {
                     ],
                   ),
                 ),
-                const Divider(),
+                Divider(color: Theme.of(context).colorScheme.outlineVariant),
                 Text(
                   // Display description for selected item
                   """Tangzhong is an Asian technique that calls for pre-cooking a portion of the raw flour in a recipe with a liquid (usually water or milk) until it forms a paste. Then, this paste can be added to dough, resulting in bread that's tenderer, more fluffy, and lasts longer before staling.

@@ -117,7 +117,8 @@ class _MyHomePageState extends State<MyHomePage> {
             bottomNavigationBar: NavigationBar(
               selectedIndex: recipeProvider.currentIndex,
               onDestinationSelected: recipeProvider.setIndex,
-              indicatorColor: Theme.of(context).colorScheme.outline,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+              indicatorColor: Theme.of(context).colorScheme.secondaryContainer,
               destinations: const <NavigationDestination>[
                 NavigationDestination(
                   icon: Icon(Icons.home_filled),

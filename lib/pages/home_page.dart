@@ -37,9 +37,9 @@ class HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
 
   static const List<bool> _neapolitanParams = [
     // hasSugar, hasFat, isMultiStage, hasPreferment, 
-    // prefermentType(biga/poolish), yeastType(instant/active), 
-    // pizzaType (neapolitan/pan)
-    false, false, false, false, true, false, true
+    // prefermentType(biga/poolish), hasTangzhong, 
+    // yeastType(instant/active), pizzaType (neapolitan/pan)
+    false, false, false, false, true, false, false, true
   ];
 
   static const List<IngredientData> _panIngredients = [
@@ -59,9 +59,9 @@ class HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
 
   static const List<bool> _panParams = [
     // hasSugar, hasFat, isMultiStage, hasPreferment, 
-    // prefermentType(biga/poolish), yeastType(instant/active), 
-    // pizzaType (neapolitan/pan)
-    false, false, true, false, false, false, false
+    // prefermentType(biga/poolish), hasTangzhong, 
+    // yeastType(instant/active), pizzaType (neapolitan/pan)
+    false, false, true, false, false, false, false, false
   ];
 
   // A method to save the current recipe

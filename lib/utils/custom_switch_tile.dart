@@ -25,7 +25,7 @@ class CustomSwitchTile extends StatelessWidget {
           child: InkWell(
             onTap: onTileTap,
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -41,7 +41,7 @@ class CustomSwitchTile extends StatelessWidget {
         const SizedBox(
           height: 32,
           child: VerticalDivider(
-            width: 32,
+            width: 16,
             thickness: 1,
           ),
         ),

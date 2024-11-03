@@ -28,6 +28,7 @@ class RecipeProvider with ChangeNotifier {
         prefermentType: PrefermentType.biga,
         prefermentPercentage: 20,
         prefermentHours: 12,
+        hasTangzhong: false,
         pizzaType: PizzaType.neapolitan,
         notes: '',
       );
@@ -53,6 +54,7 @@ class RecipeProvider with ChangeNotifier {
         prefermentType: PrefermentType.poolish,
         prefermentPercentage: 20,
         prefermentHours: 12,
+        hasTangzhong: false,
         pizzaType: PizzaType.pan,
         notes: '',
       );
@@ -121,6 +123,7 @@ class PizzaDoughRecipe {
   final PrefermentType prefermentType;
   final int prefermentPercentage;
   final int prefermentHours;
+  final bool hasTangzhong;
   final PizzaType pizzaType;
   final String notes;
 
@@ -146,6 +149,7 @@ class PizzaDoughRecipe {
     required this.prefermentType,
     required this.prefermentPercentage,
     required this.prefermentHours,
+    required this.hasTangzhong,
     required this.pizzaType,
     this.notes = '',
   });
@@ -173,6 +177,7 @@ class PizzaDoughRecipe {
       'prefermentType': prefermentType.index,
       'prefermentPercentage': prefermentPercentage,
       'prefermentHours': prefermentHours,
+      'hasTangzhong': hasTangzhong ? 1 : 0,
       'pizzaType': pizzaType.index,
       'notes': notes,
     };
@@ -201,6 +206,7 @@ class PizzaDoughRecipe {
       prefermentType: PrefermentType.values[map['prefermentType']],
       prefermentPercentage: map['prefermentPercentage'],
       prefermentHours: map['prefermentHours'],
+      hasTangzhong: map['hasTangzhong'] == 1,
       pizzaType: PizzaType.values[map['pizzaType']],
       notes: map['notes'],
     );

@@ -62,10 +62,7 @@ class SettingsTabState extends State<SettingsTab> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
               ),
 
-              const Divider(
-                indent: 24,
-                endIndent: 24,
-              ),
+              const Divider(indent: 24,endIndent: 24,),
 
               // Advanced Features
               Padding(
@@ -108,6 +105,26 @@ class SettingsTabState extends State<SettingsTab> {
                 )
               ),
 
+              // Tangzhong
+              CustomSwitchTile(
+                value: advancedProvider.useTangzhong,
+                onTileTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TangzhongSelector()
+                    ),
+                  );
+                },
+                onSwitchChanged: (value) {
+                  advancedProvider.setUseTangzhong(value);
+                },
+                title: Text(
+                  'Tangzhong',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+
               // Bowl Compensation
               CustomSwitchTile(
                 value: advancedProvider.bowlCompensation,
@@ -121,7 +138,6 @@ class SettingsTabState extends State<SettingsTab> {
                       ),
                     ),
                   );
-                  // print("Bowl compensation tapped");
                 },
                 onSwitchChanged: (value) {
                   advancedProvider.setBowlCompensation(value);

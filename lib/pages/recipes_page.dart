@@ -113,6 +113,7 @@ class RecipeDatabaseHelper {
         prefermentType INTEGER NOT NULL,
         prefermentPercentage INTEGER NOT NULL,
         prefermentHours INTEGER NOT NULL,
+        hasTangzhong INTEGER NOT NULL,
         pizzaType INTEGER NOT NULL,
         notes TEXT
       )
@@ -235,6 +236,14 @@ class RecipesTabState extends State<RecipesTab> {
                       Provider.of<AdvancedProvider>(context, listen: false).setUsePreferments(false);
                       Provider.of<AdvancedProvider>(context, listen: false).setPrefermentType(recipe.prefermentType);
                     }
+
+                    if (recipe.hasTangzhong) {
+                      Provider.of<AdvancedProvider>(context, listen: false).setUseTangzhong(true);
+                    }
+                    else {
+                      Provider.of<AdvancedProvider>(context, listen: false).setUseTangzhong(false);
+                    }
+
                     Provider.of<RecipeProvider>(context, listen: false).updateRecipe(recipe);
                   }
                 ),

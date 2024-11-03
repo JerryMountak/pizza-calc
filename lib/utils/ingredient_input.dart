@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'dart:developer';
+import 'dart:developer' as dev;
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:pizza_calc/utils/advanced_features.dart';
 import 'package:pizza_calc/utils/recipes/recipe.dart';
@@ -257,19 +258,19 @@ class IngredientInputState extends State<IngredientInput> {
   // Function to calculate the ingredients with added debug info
   void _calculateIngredients() async {
     // final startTime = DateTime.now();
-    // log("Ingredient calculation started at: $startTime");
+    // dev.log("Ingredient calculation started at: $startTime");
 
     // Calculate total dough weight
     int totalWeight = _doughBalls * _ballWeight;
 
     // Add bowl compensation if enabled
     if (Provider.of<AdvancedProvider>(context, listen: false).bowlCompensation) {
-      log("~~~~~~~ Adding bowl compensation ~~~~~~~");
+      dev.log("~~~~~~~ Adding bowl compensation ~~~~~~~");
       double totalWeightDouble = totalWeight.toDouble();
       totalWeightDouble = totalWeight * (1 + Provider.of<AdvancedProvider>(context, listen: false).compPercentage / 100);
       totalWeight = totalWeightDouble.toInt();
     }
-    log("Total dough weight: $totalWeight");
+    dev.log("Total dough weight: $totalWeight");
 
     // Perform ingredient calculations
     _flour = totalWeight / (1 + _hydration / 100 + _saltPercentage / 100 + 
@@ -293,14 +294,14 @@ class IngredientInputState extends State<IngredientInput> {
       _water -= _prefermentWater;
     }
 
-    log("Calculated flour: $_flour, water: $_water, salt: $_salt, sugar: $_sugar, fat: $_fat");
+    dev.log("Calculated flour: $_flour, water: $_water, salt: $_salt, sugar: $_sugar, fat: $_fat");
     if(_hasPreferment) {
-      log("Calculated preferment flour: $_prefermentFlour, water: $_prefermentWater");
+      dev.log("Calculated preferment flour: $_prefermentFlour, water: $_prefermentWater");
     }
 
     // Determine yeast type
     String yeastType = _yeastType == YeastType.active ? 'active' : 'instant';
-    log("Yeast type: $yeastType");
+    dev.log("Yeast type: $yeastType");
 
     // Calculate yeast
     List<List<double>> fermentationSteps = [];
@@ -309,7 +310,7 @@ class IngredientInputState extends State<IngredientInput> {
     }
     fermentationSteps.add([_rtHours.toDouble(), _rt]);
 
-    log("Fermentation steps: $fermentationSteps");
+    dev.log("Fermentation steps: $fermentationSteps");
 
     try {
       await DatabaseHelper().loadLookupTable(yeastType);
@@ -330,15 +331,16 @@ class IngredientInputState extends State<IngredientInput> {
         else {
           _prefermentYeast = _prefermentFlour * prefermentYeastCalc(_prefermentHours.toDouble());
         }
+        _yeast = max(0, _yeast - _prefermentYeast);
         _yeast -= _prefermentYeast;
       }
 
-      log("Yeast percentage: $yeastAmount, Calculated yeast: $_yeast");
+      dev.log("Yeast percentage: $yeastAmount, Calculated yeast: $_yeast");
       if (_hasPreferment) {
-        log("Calculated preferment yeast: $_prefermentYeast");
+        dev.log("Calculated preferment yeast: $_prefermentYeast");
       }
     } catch (e) {
-      log("Error during yeast calculation: $e");
+      dev.log("Error during yeast calculation: $e");
     }
 
     if (!mounted) return; // Check if the widget is still mounted
@@ -445,10 +447,6 @@ class IngredientInputState extends State<IngredientInput> {
                                 child: TextField(
                                   controller: doughBallController,
                                   onChanged: (value) {
-                                    // if (value.isNotEmpty) {
-                                    //   _doughBalls = int.parse(value);
-                                    //   _calculateIngredients();
-                                    // }
                                     _onInputChanged(value, int.parse, (value) => _doughBalls = value.toInt());
                                   },
                                   keyboardType: TextInputType.number,
@@ -466,10 +464,6 @@ class IngredientInputState extends State<IngredientInput> {
                                 child: TextField(
                                   controller: ballWeightController,
                                   onChanged: (value) {
-                                    // if (value.isNotEmpty) {
-                                    //   _ballWeight = int.parse(value);
-                                    //   _calculateIngredients();
-                                    // }
                                     _onInputChanged(value, int.parse, (value) => _ballWeight = value.toInt());
                                   },
                                   decoration: const InputDecoration(
@@ -515,10 +509,6 @@ class IngredientInputState extends State<IngredientInput> {
                                 child: TextField(
                                   controller: hydrationController,
                                   onChanged: (value) {
-                                    // if (value.isNotEmpty) {
-                                    //   _hydration = int.parse(value);
-                                    //   _calculateIngredients();
-                                    // }
                                     _onInputChanged(value, int.parse, (value) => _hydration = value.toInt());
                                   },
                                   keyboardType: TextInputType.number,
@@ -565,10 +555,6 @@ class IngredientInputState extends State<IngredientInput> {
                                 child: TextField(
                                   controller: saltPercentageController,
                                   onChanged: (value) {
-                                    // if (value.isNotEmpty) {
-                                    //   _saltPercentage = double.parse(value);
-                                    //   _calculateIngredients();
-                                    // }
                                     _onInputChanged(value, double.parse, (value) => _saltPercentage = value.toDouble());
                                   },
                                   keyboardType: TextInputType.number,
@@ -618,11 +604,11 @@ class IngredientInputState extends State<IngredientInput> {
                                     ingredients.add(
                                       IngredientData(label: 'Sugar', value: _sugar),
                                     );
-                                    log('Ingredient added: ${ingredients.length}');
+                                    dev.log('Ingredient added: ${ingredients.length}');
                                   }
                                   else {
                                     ingredients.removeWhere((element) => element.label == 'Sugar');
-                                    log('Ingredient removed:${ingredients.length}');
+                                    dev.log('Ingredient removed:${ingredients.length}');
                                   }
                                 });
                                 _calculateIngredients();
@@ -658,10 +644,6 @@ class IngredientInputState extends State<IngredientInput> {
                                     child: TextField(
                                       controller: sugarController,
                                       onChanged: (value) {
-                                        // if (value.isNotEmpty) {
-                                        //   _sugarPercentage = double.parse(value);
-                                        //   _calculateIngredients();
-                                        // }
                                         _onInputChanged(value, double.parse, (value) => _sugarPercentage = value.toDouble());
                                       },
                                       keyboardType: TextInputType.number,
@@ -681,10 +663,6 @@ class IngredientInputState extends State<IngredientInput> {
                                     child: TextField(
                                       controller: fatController,
                                       onChanged: (value) {
-                                        // if (value.isNotEmpty) {
-                                        //   _fatPercentage = double.parse(value);
-                                        //   _calculateIngredients();
-                                        // }
                                         _onInputChanged(value, double.parse, (value) => _fatPercentage = value.toDouble());
                                       },
                                       keyboardType: TextInputType.number,

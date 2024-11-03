@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 enum PrefermentType {
-  biga(
-      'A stiff pre-ferment with 50-55% hydration, great for natural sweetness'),
+  biga('A stiff pre-ferment with 50-55% hydration, great for natural sweetness'),
   poolish('A liquid pre-ferment with 100% hydration, enhances extensibility');
 
   final String description;
@@ -80,7 +79,6 @@ class _PrefermentSelectorState extends State<PrefermentSelector> {
       builder: (context, advancedProvider, child) {
         return Scaffold(
           appBar: AppBar(
-            // backgroundColor: Colors.black,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () => Navigator.of(context).pop(),
@@ -243,7 +241,6 @@ class _CompensationSelectorState extends State<CompensationSelector> {
       builder: (context, advancedProvider, child) {
         return Scaffold(
           appBar: AppBar(
-            // backgroundColor: Colors.black,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () => Navigator.of(context).pop(),

@@ -57,14 +57,11 @@ class RecipeProvider with ChangeNotifier {
         notes: '',
       );
 
-    // final AdvancedProvider _advancedProvider;
-    // RecipeProvider(this._advancedProvider);
 
   int get currentIndex => _currentIndex;
   int get currentTab => _currentTab;
   PizzaDoughRecipe get neapolitanRecipe => _neapolitanRecipe;
   PizzaDoughRecipe get panRecipe => _panRecipe;
-  // AdvancedProvider get advancedprovider => _advancedProvider;
 
   void setIndex(int index) {
     _currentIndex = index;
@@ -86,14 +83,6 @@ class RecipeProvider with ChangeNotifier {
     else {
       throw Exception('Invalid pizza type');
     }
-
-    // if (newRecipe.hasPreferment) {
-    //   // Update provider variable
-    //   _advancedProvider.setUsePreferments(true);
-    // }
-    // else {
-    //   _advancedProvider.setUsePreferments(false);
-    // }
     
     // Navigate to homepage
     _currentIndex = 0;

@@ -5,7 +5,7 @@ class CustomSwitchTile extends StatelessWidget {
   final VoidCallback onTileTap;
   final ValueChanged<bool> onSwitchChanged;
   final Widget title;
-  final Widget? subtitle;  // Made optional using Widget?
+  final Widget? subtitle;
 
   const CustomSwitchTile({
     super.key,
@@ -13,7 +13,7 @@ class CustomSwitchTile extends StatelessWidget {
     required this.onTileTap,
     required this.onSwitchChanged,
     required this.title,
-    this.subtitle,  // No default value needed since it's nullable
+    this.subtitle,
   });
 
   @override
@@ -28,10 +28,9 @@ class CustomSwitchTile extends StatelessWidget {
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                // mainAxisSize: MainAxisSize.min,
                 children: [
                   title,
-                  if (subtitle != null)  // Check for null instead of empty string
+                  if (subtitle != null)
                     subtitle!,
                 ],
               ),

@@ -5,8 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-
-import 'dart:developer'; // For logging
+import 'dart:developer' as dev;
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -29,22 +28,22 @@ class DatabaseHelper {
 
     // If working on web or windows
     if (kIsWeb || Platform.isWindows) {
-      log("Detected web/windows environment");
+      dev.log("Detected web/windows environment");
 
       dbPath = join(await getDatabasesPath(), 'fermentation.db');
 
       // Check if the database exists
-      log("Checking if recipes database exists at path: $dbPath");
+      dev.log("Checking if recipes database exists at path: $dbPath");
       dbExists = await databaseExists(dbPath);
     }
     else {
-      log("No web environment detected");
+      dev.log("No web environment detected");
 
       final appDocDir = await getApplicationDocumentsDirectory();
       dbPath = join(appDocDir.path, 'fermentation.db');
 
       // Check if the database exists
-      log("Checking if recipes database exists at path: $dbPath");
+      dev.log("Checking if recipes database exists at path: $dbPath");
       dbExists = await databaseExists(dbPath);
     }
 
@@ -52,37 +51,37 @@ class DatabaseHelper {
       // If working on web or windows
       if (kIsWeb || Platform.isWindows) {
         try {
-          log("Copying database for web from assets");
+          dev.log("Copying database for web from assets");
 
           final data = await rootBundle.load('assets/fermentation.db');
           final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
           await databaseFactory.writeDatabaseBytes(dbPath, bytes);
 
-          log("Database copied successfully for web");
+          dev.log("Database copied successfully for web");
         } catch (e) {
-          log("Error copying database: $e");
+          dev.log("Error copying database: $e");
         }
       } 
       else { // Working on Android        
         try {
-          log("Creating new copy from assets");
+          dev.log("Creating new copy from assets");
 
           ByteData data = await rootBundle.load('assets/fermentation.db');
           List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 
           // Write the copied database to the device's storage
           await File(dbPath).writeAsBytes(bytes, flush: true);
-          log("Database copied successfully from assets to: $dbPath");
+          dev.log("Database copied successfully from assets to: $dbPath");
         } catch (e) {
-          log("Error copying database: $e");
+          dev.log("Error copying database: $e");
         }
       }
     } else {
-      log("Opening existing database at: $dbPath");
+      dev.log("Opening existing database at: $dbPath");
     }
 
     final databaseInstance = await openDatabase(dbPath, singleInstance: false);
-    log("Database opened successfully");
+    dev.log("Database opened successfully");
     return databaseInstance;
   }
 
@@ -190,10 +189,10 @@ Future<double> adjustYeast(
   }
 ) async {
   double yeast = initialYeast;
-  double bestYeast = initialYeast;          // To track the best yeast value found
-  double bestPercentage = double.infinity;  // To track the best total percentage found
-  final Set<double> previousYeastValues = {};   // To store previous yeast values
-  int iteration = 0;                        // To count iterations for debugging
+  double bestYeast = initialYeast;            // To track the best yeast value found
+  double bestPercentage = double.infinity;    // To track the best total percentage found
+  final Set<double> previousYeastValues = {}; // To store previous yeast values
+  int iteration = 0;                          // To count iterations for debugging
 
   while (iteration < 20) {
     double totalPercentage = 0.0;
@@ -206,11 +205,11 @@ Future<double> adjustYeast(
       totalPercentage += percentage;
 
       // Debug information for each step
-      log("Step: $step, Yeast: $yeast, Percentage: $percentage");
+      dev.log("Step: $step, Yeast: $yeast, Percentage: $percentage");
     }
 
     // Debug information for the total percentage
-    log("Iteration: $iteration, Total Percentage: $totalPercentage");
+    dev.log("Iteration: $iteration, Total Percentage: $totalPercentage");
 
     // Check if this is the best percentage found so far
     if ((totalPercentage - 100).abs() < bestPercentage) {
@@ -219,7 +218,7 @@ Future<double> adjustYeast(
     }
 
     if ((totalPercentage - 100).abs() < tolerance) {
-      log("Desired percentage achieved within tolerance: ${(totalPercentage - 100).abs()}");
+      dev.log("Desired percentage achieved within tolerance: ${(totalPercentage - 100).abs()}");
       return yeast; // Break if we are within the tolerance
     }
 
@@ -229,7 +228,7 @@ Future<double> adjustYeast(
     );
     
     if (oscillationDetected) {
-      log("Oscillation detected in yeast values, best total percentage $bestPercentage, returning best yeast value: $bestYeast");
+      dev.log("Oscillation detected in yeast values, best total percentage $bestPercentage, returning best yeast value: $bestYeast");
       return bestYeast; // Return the best yeast value found
     } else {
       // Store the current yeast value
@@ -245,16 +244,16 @@ Future<double> adjustYeast(
     iteration++; // Increment the iteration count
   }
   
-  log("Reached maximum iterations. Best yeast value: $bestYeast");
+  dev.log("Reached maximum iterations. Best yeast value: $bestYeast");
   return bestYeast; // Return the best yeast value after maximum iterations
 }
 
 double prefermentYeastCalc(double hours) {
   // Define the known points
   final List<List<double>> points = [
-    [3.0, 0.015], // 3 hours -> 1.5%
-    [8.0, 0.007],  // 8 hours -> 0.7%
-    [13.0, 0.003], // 13 hours -> 0.3%
+    [3.0, 0.015],   // 3 hours -> 1.5%
+    [8.0, 0.007],   // 8 hours -> 0.7%
+    [13.0, 0.003],  // 13 hours -> 0.3%
   ];
   
   // If hours is before first point or after last point, clamp to nearest value

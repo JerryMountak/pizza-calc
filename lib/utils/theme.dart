@@ -71,7 +71,7 @@ class _ThemeSelectorState extends State<ThemeSelector> {
         return Padding(
           padding: const EdgeInsets.fromLTRB(5.0, 5.0, 0.0, 5.0),
           child: ListTile(
-            title: const Text('Theme'),
+            title: Text('Theme', style: Theme.of(context).textTheme.titleMedium,),
             trailing: ToggleButtons(
               borderRadius: BorderRadius.circular(1000),
               onPressed: (int index) {
@@ -87,4 +87,4 @@ class _ThemeSelectorState extends State<ThemeSelector> {
       },
     );
   } 
-  }
+}

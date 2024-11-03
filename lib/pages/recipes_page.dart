@@ -1,4 +1,4 @@
-import 'dart:developer';
+import 'dart:developer' as dev;
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,22 +29,22 @@ class RecipeDatabaseHelper {
 
     // If working on web
     if (kIsWeb || Platform.isWindows) {
-      log("Detected web/windows environment");
+      dev.log("Detected web/windows environment");
 
       dbPath = join(await getDatabasesPath(), 'fermentation.db');
 
       // Check if the database exists
-      log("Checking if recipes database exists at path: $dbPath");
+      dev.log("Checking if recipes database exists at path: $dbPath");
       dbExists = await databaseExists(dbPath);
     }
     else {
-      log("Running on Android");
+      dev.log("Running on Android");
 
       final appDocDir = await getApplicationDocumentsDirectory();
       dbPath = join(appDocDir.path, 'fermentation.db');
 
       // Check if the database exists
-      log("Checking if recipes database exists at path: $dbPath");
+      dev.log("Checking if recipes database exists at path: $dbPath");
       dbExists = await databaseExists(dbPath);
     }
     
@@ -52,33 +52,33 @@ class RecipeDatabaseHelper {
       // If working on web or windows
       if (kIsWeb || Platform.isWindows) {
         try {
-          log("Copying database for web from assets");
+          dev.log("Copying database for web from assets");
 
           final data = await rootBundle.load('assets/fermentation.db');
           final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
           await databaseFactory.writeDatabaseBytes(dbPath, bytes);
 
-          log("Database copied successfully for web");
+          dev.log("Database copied successfully for web");
         } catch (e) {
-          log("Error copying database: $e");
+          dev.log("Error copying database: $e");
         }
       } 
       else { // Working on Android        
         try {
-          log("Creating new copy from assets");
+          dev.log("Creating new copy from assets");
 
           ByteData data = await rootBundle.load('assets/fermentation.db');
           List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 
           // Write the copied database to the device's storage
           await File(dbPath).writeAsBytes(bytes, flush: true);
-          log("Database copied successfully from assets to: $dbPath");
+          dev.log("Database copied successfully from assets to: $dbPath");
         } catch (e) {
-          log("Error copying database: $e");
+          dev.log("Error copying database: $e");
         }
       }
     } else {
-      log("Opening existing database at: $dbPath");
+      dev.log("Opening existing database at: $dbPath");
     }
 
     return await openDatabase(
@@ -89,7 +89,7 @@ class RecipeDatabaseHelper {
   }
 
   Future<void> _createDB(Database db, int version) async {
-    log("Creating recipes table");
+    dev.log("Creating recipes table");
     await db.execute('''
       CREATE TABLE IF NOT EXISTS recipes(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -117,7 +117,7 @@ class RecipeDatabaseHelper {
         notes TEXT
       )
     ''');
-    log("Recipes table created successfully");
+    dev.log("Recipes table created successfully");
   }
 
   // CRUD operations
@@ -229,11 +229,11 @@ class RecipesTabState extends State<RecipesTab> {
                   onTap: () {
                     if (recipe.hasPreferment) {
                       Provider.of<AdvancedProvider>(context, listen: false).setUsePreferments(true);
-                      Provider.of<AdvancedProvider>(context, listen: false).updatePrefermentType(recipe.prefermentType);
+                      Provider.of<AdvancedProvider>(context, listen: false).setPrefermentType(recipe.prefermentType);
                     }
                     else {
                       Provider.of<AdvancedProvider>(context, listen: false).setUsePreferments(false);
-                      Provider.of<AdvancedProvider>(context, listen: false).updatePrefermentType(recipe.prefermentType);
+                      Provider.of<AdvancedProvider>(context, listen: false).setPrefermentType(recipe.prefermentType);
                     }
                     Provider.of<RecipeProvider>(context, listen: false).updateRecipe(recipe);
                   }

@@ -177,6 +177,7 @@ Future<double> calculateFermentationPercentage(
     double yeast) async {
   final proofingTable = ProofingTimeTable(lookupTable);
   double totalTime = proofingTable.getProofingTime(yeast, temp);
+  dev.log("Total fermentation time for $yeast at $temp: $totalTime");
   return (hours / totalTime) * 100;
 }
 
@@ -194,7 +195,7 @@ Future<double> adjustYeast(
   final Set<double> previousYeastValues = {}; // To store previous yeast values
   int iteration = 0;                          // To count iterations for debugging
 
-  while (iteration < 20) {
+  while (yeast > 0) {
     double totalPercentage = 0.0;
 
     for (var step in fermentationSteps) {
@@ -242,9 +243,14 @@ Future<double> adjustYeast(
       yeast -= 0.02; // Decrease yeast
     }
     iteration++; // Increment the iteration count
+    if (iteration > 30) break; // Stop if the iteration count exceeds custom threshold
   }
   
-  dev.log("Reached maximum iterations. Best yeast value: $bestYeast");
+  if (iteration > 30) {
+    dev.log("Reached maximum iterations. Best yeast value: $bestYeast");
+  } else {
+    dev.log("Yeast value reached zero. Best yeast value: $bestYeast");
+  }
   return bestYeast; // Return the best yeast value after maximum iterations
 }
 

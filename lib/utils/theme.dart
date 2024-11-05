@@ -48,8 +48,16 @@ class ThemeProvider with ChangeNotifier {
     try {
       final corePalette = await DynamicColorPlugin.getCorePalette();
       if (corePalette != null) {
-        lightDynamic = corePalette.toColorScheme(brightness: Brightness.light);
-        darkDynamic = corePalette.toColorScheme(brightness: Brightness.dark);
+        // lightDynamic = corePalette.toColorScheme(brightness: Brightness.light);
+        lightDynamic = ColorScheme.fromSeed(
+          seedColor: Color(corePalette.primary.get(40)),
+          brightness: Brightness.light,
+        );
+        // darkDynamic = corePalette.toColorScheme(brightness: Brightness.dark);
+        darkDynamic = ColorScheme.fromSeed(
+          seedColor: Color(corePalette.primary.get(40)),
+          brightness: Brightness.dark,
+        );
       }
     } catch (e) {
       // Handle any errors loading dynamic colors

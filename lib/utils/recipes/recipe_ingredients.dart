@@ -56,9 +56,9 @@ class RecipeIngredientsState extends State<RecipeIngredients> {
 
     // Determine number of columns based on screen width
     int crossAxisCount;
-    if (screenWidth < 400) {
+    if (screenWidth < 1000) {
       crossAxisCount = 2;
-    } else if (screenWidth < 800) {
+    } else if (screenWidth < 2000) {
       crossAxisCount = 3;
     } else {
       crossAxisCount = 4;

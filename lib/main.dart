@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pizza_calc/utils/advanced_features.dart';
@@ -12,20 +11,23 @@ import 'pages/settings_page.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
   if (kIsWeb || Platform.isWindows) {
-    // Initialize FFI
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
 
-  // Avoid errors caused by flutter upgrade.
-  WidgetsFlutterBinding.ensureInitialized();
+  // Pre-load theme state
+  final themeState = await ThemeProvider.initializeTheme();
   
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(
+          create: (_) => ThemeProvider()..initializeFromState(themeState)
+        ),
         ChangeNotifierProvider(create: (_) => RecipeProvider()),
         ChangeNotifierProvider(create: (_) => AdvancedProvider()),
       ],
@@ -37,57 +39,52 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  static final _defaultLightColorScheme =
-    ColorScheme.fromSeed(seedColor: Colors.deepPurple);
-
-  static final _defaultDarkColorScheme = 
-    ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark);
+  static final _defaultLightColorScheme = ColorScheme.fromSeed(
+    seedColor: Colors.deepPurple
+  );
+  static final _defaultDarkColorScheme = ColorScheme.fromSeed(
+    seedColor: Colors.deepPurple, 
+    brightness: Brightness.dark
+  );
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
-        return DynamicColorBuilder(
-          builder: (lightColorScheme, darkColorScheme) {
-            final lightScheme = themeProvider.useDynamicColors
-                ? (lightColorScheme ?? _defaultLightColorScheme)
-                : _defaultLightColorScheme;
-            final darkScheme = themeProvider.useDynamicColors
-                ? (darkColorScheme ?? _defaultDarkColorScheme)
-                : _defaultDarkColorScheme;
+        final lightScheme = themeProvider.useDynamicColors
+            ? (themeProvider.lightDynamic ?? _defaultLightColorScheme)
+            : _defaultLightColorScheme;
+        final darkScheme = themeProvider.useDynamicColors
+            ? (themeProvider.darkDynamic ?? _defaultDarkColorScheme)
+            : _defaultDarkColorScheme;
 
-            return MaterialApp(
-              title: 'PizzaCalc',
-              theme: ThemeData(
-                pageTransitionsTheme: const PageTransitionsTheme(
-                  builders: <TargetPlatform, PageTransitionsBuilder>{
-                    // Set the predictive back transitions for Android.
-                    TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
-                  },
-                ),
-                useMaterial3: true,
-                colorScheme: lightScheme,
-              ),
-              darkTheme: ThemeData(
-                pageTransitionsTheme: const PageTransitionsTheme(
-                  builders: <TargetPlatform, PageTransitionsBuilder>{
-                    // Set the predictive back transitions for Android.
-                    TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
-                  },
-                ),
-                useMaterial3: true,
-                colorScheme: darkScheme,
-              ),
-              themeMode: themeProvider.themeMode,
-              home: const MyHomePage(title: 'PizzaCalc'),
-            );
-          },
+        return MaterialApp(
+          title: 'PizzaCalc',
+          theme: ThemeData(
+            pageTransitionsTheme: const PageTransitionsTheme(
+              builders: <TargetPlatform, PageTransitionsBuilder>{
+                TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+              },
+            ),
+            useMaterial3: true,
+            colorScheme: lightScheme,
+          ),
+          darkTheme: ThemeData(
+            pageTransitionsTheme: const PageTransitionsTheme(
+              builders: <TargetPlatform, PageTransitionsBuilder>{
+                TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+              },
+            ),
+            useMaterial3: true,
+            colorScheme: darkScheme,
+          ),
+          themeMode: themeProvider.themeMode,
+          home: const MyHomePage(title: 'PizzaCalc'),
         );
       },
     );
   }
 }
-
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});

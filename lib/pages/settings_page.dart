@@ -116,7 +116,7 @@ class SettingsTabState extends State<SettingsTab> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => TangzhongSelector()
+                      builder: (context) => const TangzhongSelector()
                     ),
                   );
                 },

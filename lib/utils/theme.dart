@@ -122,17 +122,17 @@ class _ThemeSelectorState extends State<ThemeSelector> {
   @override
   Widget build(BuildContext context) {
     List<ToggleButtonsOption> options = [
-      ToggleButtonsOption(
+      const ToggleButtonsOption(
         ThemeMode.light,
-        const Icon(Icons.light_mode, semanticLabel: "Light")
+        Icon(Icons.light_mode, semanticLabel: "Light")
       ),
-      ToggleButtonsOption(
+      const ToggleButtonsOption(
         ThemeMode.dark,
-        const Icon(Icons.dark_mode, semanticLabel: "Dark")
+        Icon(Icons.dark_mode, semanticLabel: "Dark")
       ),
-      ToggleButtonsOption(
+      const ToggleButtonsOption(
         ThemeMode.system,
-        const Icon(Icons.brightness_auto, semanticLabel: "System")
+        Icon(Icons.brightness_auto, semanticLabel: "System")
       ),
     ];
 

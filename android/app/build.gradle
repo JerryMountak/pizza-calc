@@ -7,6 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.pizza_calc"
+    project.ext.set("appName", "pizza-calc")
     // compileSdk = flutter.compileSdkVersion
     // ndkVersion = flutter.ndkVersion
     compileSdk = 35
@@ -32,6 +33,9 @@ android {
         targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Modify release apk name
+        setProperty("archivesBaseName", "$appName-$versionName-$versionCode")
     }
 
     buildTypes {

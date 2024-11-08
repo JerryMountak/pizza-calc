@@ -48,21 +48,27 @@ class ThemeProvider with ChangeNotifier {
     try {
       final corePalette = await DynamicColorPlugin.getCorePalette();
       if (corePalette != null) {
+        dev.log('Core palette retrieved: ${corePalette.primary.get(40)}');
+
         // lightDynamic = corePalette.toColorScheme(brightness: Brightness.light);
         lightDynamic = ColorScheme.fromSeed(
           seedColor: Color(corePalette.primary.get(40)),
           brightness: Brightness.light,
         );
+
         // darkDynamic = corePalette.toColorScheme(brightness: Brightness.dark);
         darkDynamic = ColorScheme.fromSeed(
           seedColor: Color(corePalette.primary.get(40)),
           brightness: Brightness.dark,
         );
       }
-    } catch (e) {
-      // Handle any errors loading dynamic colors
-      dev.log('Error loading dynamic colors: $e');
-    }
+      else {
+        dev.log("Device doesn't provide a core palette");
+      }
+    } catch (e, stackTrace) {
+    dev.log('Error loading dynamic colors: $e');
+    dev.log('Stack trace: $stackTrace');
+  }
 
     return ThemeState(
       lightDynamic: lightDynamic,

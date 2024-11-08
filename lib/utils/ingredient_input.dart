@@ -594,7 +594,7 @@ class IngredientInputState extends State<IngredientInput> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 5.0),
                   child: Card(
-                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     child: SizedBox(
                       width: screenWidth * 0.9,
                       child: Center(
@@ -663,7 +663,7 @@ class IngredientInputState extends State<IngredientInput> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 5.0),
                   child: Card(
-                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     child: SizedBox(
                       width: screenWidth * 0.9,
                       child: Center(
@@ -732,7 +732,7 @@ class IngredientInputState extends State<IngredientInput> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 5.0),
                   child: Card(
-                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     child: SizedBox(
                       width: screenWidth * 0.9,
                       child: Center(
@@ -886,7 +886,7 @@ class IngredientInputState extends State<IngredientInput> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 5.0),
                   child: Card(
-                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     child: SizedBox(
                       width: screenWidth * 0.9,
                       child: Center(
@@ -1239,7 +1239,7 @@ class IngredientInputState extends State<IngredientInput> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10.0),
                   child: Card(
-                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     child: SizedBox(
                       width: screenWidth * 0.9,
                       child: Center(

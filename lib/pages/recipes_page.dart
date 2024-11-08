@@ -207,7 +207,7 @@ class RecipesTabState extends State<RecipesTab> {
               final recipe = recipes[index];
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: Theme.of(context).colorScheme.surfaceContainer,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: ListTile(
                   title: Text(
                     recipe.name, 

@@ -1,14 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pizza_calc/models/ingredients.dart';
 
-class IngredientData {
-  final String label;
-  final double value;
-
-  const IngredientData({
-    required this.label,
-    required this.value,
-  });
-}
 
 class RecipeIngredients extends StatefulWidget {
   final List<IngredientData> initialIngredients;

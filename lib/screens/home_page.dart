@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:pizza_calc/utils/ingredient_input.dart';
-import 'package:pizza_calc/utils/recipes/recipe_ingredients.dart';
-import 'package:pizza_calc/pages/recipes_page.dart';
-import 'package:pizza_calc/utils/recipes/recipe.dart';
+import 'package:pizza_calc/services/recipe_db.dart';
 import 'package:provider/provider.dart';
+
+import 'package:pizza_calc/models/pizza_recipe.dart';
+import 'package:pizza_calc/models/ingredients.dart';
+import 'package:pizza_calc/providers/recipe_provider.dart';
+import 'package:pizza_calc/utils/ingredient_input.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});

@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:pizza_calc/utils/custom_switch_tile.dart';
-import 'package:pizza_calc/utils/advanced_features.dart';
-import 'package:pizza_calc/utils/theme.dart';
+import 'package:pizza_calc/widgets/compensation_selector.dart';
+import 'package:pizza_calc/widgets/preferment_selector.dart';
+import 'package:pizza_calc/widgets/tangzhong_selector.dart';
 import 'package:provider/provider.dart';
+
+import 'package:pizza_calc/models/pizza_recipe.dart';
+import 'package:pizza_calc/providers/advanced_provider.dart';
+import 'package:pizza_calc/providers/theme_provider.dart';
+import 'package:pizza_calc/widgets/custom_switch_tile.dart';
+
+import 'package:pizza_calc/widgets/theme_selector.dart';
 
 class SettingsTab extends StatefulWidget {
   const SettingsTab({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pizza_calc/models/pizza_recipe.dart';
 
-enum YeastType { active, instant }
 
 class YeastSelector extends StatefulWidget {
   final Function(YeastType) onYeastTypeChanged;

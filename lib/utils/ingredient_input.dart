@@ -3,13 +3,16 @@ import 'dart:math';
 import 'dart:developer' as dev;
 
 import 'package:flutter/material.dart';
+import 'package:pizza_calc/services/yeast_db.dart';
 import 'package:provider/provider.dart';
 
-import 'package:pizza_calc/utils/advanced_features.dart';
-import 'package:pizza_calc/utils/recipes/recipe.dart';
-import 'package:pizza_calc/utils/recipes/recipe_ingredients.dart';
-import 'package:pizza_calc/utils/yeast/yeast_calc.dart';
-import 'package:pizza_calc/utils/yeast/yeast_selector.dart';
+import 'package:pizza_calc/models/ingredients.dart';
+import 'package:pizza_calc/models/pizza_recipe.dart';
+import 'package:pizza_calc/providers/recipe_provider.dart';
+import 'package:pizza_calc/providers/advanced_provider.dart';
+import 'package:pizza_calc/widgets/recipe_ingredients.dart';
+import 'package:pizza_calc/widgets/yeast_selector.dart';
+import 'package:pizza_calc/utils/yeast_calc.dart';
 
 class IngredientInput extends StatefulWidget {
   final List<IngredientData> initialIngredients;

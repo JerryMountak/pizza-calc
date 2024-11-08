@@ -1,14 +1,17 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pizza_calc/utils/advanced_features.dart';
-import 'package:pizza_calc/utils/recipes/recipe.dart';
-import 'package:pizza_calc/utils/theme.dart';
 import 'package:provider/provider.dart';
-import 'pages/home_page.dart';
-import 'pages/recipes_page.dart';
-import 'pages/settings_page.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+import 'package:pizza_calc/providers/advanced_provider.dart';
+import 'package:pizza_calc/providers/recipe_provider.dart';
+import 'package:pizza_calc/providers/theme_provider.dart';
+
+import 'screens/home_page.dart';
+import 'screens/recipes_page.dart';
+import 'screens/settings_page.dart';
 
 
 void main() async {

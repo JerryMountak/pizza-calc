@@ -1,13 +1,15 @@
 import 'dart:async';
-import 'dart:developer' as dev;
 import 'dart:math';
+import 'dart:developer' as dev;
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'package:pizza_calc/utils/advanced_features.dart';
 import 'package:pizza_calc/utils/recipes/recipe.dart';
 import 'package:pizza_calc/utils/recipes/recipe_ingredients.dart';
 import 'package:pizza_calc/utils/yeast/yeast_calc.dart';
 import 'package:pizza_calc/utils/yeast/yeast_selector.dart';
-import 'package:provider/provider.dart';
 
 class IngredientInput extends StatefulWidget {
   final List<IngredientData> initialIngredients;
@@ -101,6 +103,19 @@ class IngredientInputState extends State<IngredientInput> {
   late TextEditingController prefHoursController;
 
   late List<TextEditingController> controllers;
+
+  // Form keys for validation
+  final _doughBallsFormKey = GlobalKey<FormState>();
+  final _doughBallWeightFormKey = GlobalKey<FormState>();
+  final _hydrationFormKey = GlobalKey<FormState>();
+  final _saltFormKey = GlobalKey<FormState>();
+  final _optionalIngredientsFormKey = GlobalKey<FormState>();
+  final _rtFormKey = GlobalKey<FormState>();
+  final _rtHoursFormKey = GlobalKey<FormState>();
+  final _ctFormKey = GlobalKey<FormState>();
+  final _ctHoursFormKey = GlobalKey<FormState>();
+  final _prefermentFormKey = GlobalKey<FormState>();
+
 
   @override
   void initState() {
@@ -464,583 +479,848 @@ class IngredientInputState extends State<IngredientInput> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     return Consumer<AdvancedProvider>(
-        builder: (context, advancedProvider, child) {
-      return Center(
+      builder: (context, advancedProvider, child) {
+        return Center(
           child: SingleChildScrollView(
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-            // Dough Details
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5.0),
-              child: Card(
-                color: Theme.of(context).colorScheme.surfaceContainer,
-                child: SizedBox(
-                  width: screenWidth * 0.9,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 5),
-                        Text(
-                          'Dough Details',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Column(children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 15.0),
-                            child: SizedBox(
-                              width: screenWidth * 0.8,
-                              child: TextField(
-                                controller: doughBallController,
-                                onChanged: (value) {
-                                  _onInputChanged(value, int.parse,
-                                      (value) => _doughBalls = value.toInt());
-                                },
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'No. of dough balls',
-                                  border: OutlineInputBorder(),
-                                ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Dough Details
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0),
+                  child: Card(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    child: SizedBox(
+                      width: screenWidth * 0.9,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 5),
+                            Text(
+                              'Dough Details',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 15.0),
-                            child: SizedBox(
-                              width: screenWidth * 0.8,
-                              child: TextField(
-                                controller: ballWeightController,
-                                onChanged: (value) {
-                                  _onInputChanged(value, int.parse,
-                                      (value) => _ballWeight = value.toInt());
-                                },
-                                decoration: const InputDecoration(
-                                  labelText: 'Ball Weight (g)',
-                                  border: OutlineInputBorder(),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ]),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // Hydration
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5.0),
-              child: Card(
-                color: Theme.of(context).colorScheme.surfaceContainer,
-                child: SizedBox(
-                  width: screenWidth * 0.9,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 5),
-                        Text(
-                          'Water',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Column(children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 15.0),
-                            child: SizedBox(
-                              width: screenWidth * 0.8,
-                              child: TextField(
-                                controller: hydrationController,
-                                onChanged: (value) {
-                                  _onInputChanged(value, int.parse,
-                                      (value) => _hydration = value.toInt());
-                                },
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Hydration (%)',
-                                  border: OutlineInputBorder(),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ]),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // Salt
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5.0),
-              child: Card(
-                color: Theme.of(context).colorScheme.surfaceContainer,
-                child: SizedBox(
-                  width: screenWidth * 0.9,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 5),
-                        Text(
-                          'Salt',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Column(children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 15.0),
-                            child: SizedBox(
-                              width: screenWidth * 0.8,
-                              child: TextField(
-                                controller: saltPercentageController,
-                                onChanged: (value) {
-                                  _onInputChanged(
-                                      value,
-                                      double.parse,
-                                      (value) =>
-                                          _saltPercentage = value.toDouble());
-                                },
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Salt (%)',
-                                  border: OutlineInputBorder(),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ]),
-                      ],
-                    ),
-                  ),
-                )
-              ),
-            ),
-
-            // Optional Ingredients
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5.0),
-              child: Card(
-                color: Theme.of(context).colorScheme.surfaceContainer,
-                child: SizedBox(
-                  width: screenWidth * 0.9,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 5),
-                        Text(
-                          'Optional',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Column(children: [
-                          SwitchListTile(
-                            title: const Text('Sugar'),
-                            value: _hasSugar,
-                            onChanged: (bool value) {
-                              setState(() {
-                                _hasSugar = value;
-                                if (value) {
-                                  ingredients.add(
-                                    IngredientData(label: 'Sugar', value: _sugar),
-                                  );
-                                  dev.log(
-                                      'Ingredient added: ${ingredients.length}');
-                                } else {
-                                  ingredients.removeWhere(
-                                      (element) => element.label == 'Sugar');
-                                  dev.log(
-                                      'Ingredient removed:${ingredients.length}');
-                                }
-                              });
-                              _calculateIngredients();
-                            },
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          ),
-                          SwitchListTile(
-                            title: const Text('Fat'),
-                            value: _hasFat,
-                            onChanged: (bool value) {
-                              setState(() {
-                                _hasFat = value;
-                                if (value) {
-                                  ingredients.add(
-                                    IngredientData(label: 'Fat', value: _fat),
-                                  );
-                                } else {
-                                  ingredients.removeWhere(
-                                      (element) => element.label == 'Fat');
-                                }
-                              });
-                              _calculateIngredients();
-                            },
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          ),
-                          _hasSugar
-                              ? Padding(
-                                  padding: const EdgeInsets.only(bottom: 15.0),
-                                  child: SizedBox(
-                                    width: screenWidth * 0.8,
-                                    child: TextField(
-                                      controller: sugarController,
+                            const SizedBox(height: 10),
+                            Column(children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 15.0),
+                                child: SizedBox(
+                                  width: screenWidth * 0.8,
+                                  child: Form(
+                                    key: _doughBallsFormKey,
+                                    child: TextFormField(
+                                      controller: doughBallController,
                                       onChanged: (value) {
-                                        _onInputChanged(
-                                            value,
-                                            double.parse,
-                                            (value) => _sugarPercentage =
-                                                value.toDouble());
+                                        if (_doughBallsFormKey.currentState?.validate() == true) {
+                                          _onInputChanged(value, int.parse,
+                                            (value) => _doughBalls = value.toInt());
+                                        }
                                       },
                                       keyboardType: TextInputType.number,
                                       decoration: const InputDecoration(
-                                        labelText: 'Sugar (%)',
+                                        labelText: 'No. of dough balls',
                                         border: OutlineInputBorder(),
+                                        errorMaxLines: 2,
                                       ),
+                                      // trigger validation as soon as this field value has been changed
+                                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Dough balls cannot be empty';
+                                        }
+                                        final int? doughBalls = int.tryParse(value);
+                                        if (doughBalls == null) {
+                                          return 'Please enter a valid integer';
+                                        }
+                                        if (doughBalls <= 0) {
+                                          return 'Number of dough balls must be greater than zero';
+                                        }
+                                        return null;
+                                      },
                                     ),
                                   ),
-                                )
-                              : const SizedBox(height: 0),
-                          _hasFat
-                              ? Padding(
-                                  padding: const EdgeInsets.only(bottom: 15.0),
-                                  child: SizedBox(
-                                    width: screenWidth * 0.8,
-                                    child: TextField(
-                                      controller: fatController,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 15.0),
+                                child: SizedBox(
+                                  width: screenWidth * 0.8,
+                                  child: Form(
+                                    key: _doughBallWeightFormKey,
+                                    child: TextFormField(
+                                      controller: ballWeightController,
                                       onChanged: (value) {
-                                        _onInputChanged(
-                                            value,
-                                            double.parse,
-                                            (value) => _fatPercentage =
-                                                value.toDouble());
+                                        if (_doughBallWeightFormKey.currentState?.validate() == true) {
+                                          _onInputChanged(value, int.parse,
+                                              (value) => _ballWeight = value.toInt());
+                                        }
+                                      },
+                                      decoration: const InputDecoration(
+                                        labelText: 'Ball Weight (g)',
+                                        border: OutlineInputBorder(),
+                                        errorMaxLines: 2,
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Dough ball weight cannot be empty';
+                                        }
+                                        final int? doughBallWeight = int.tryParse(value);
+                                        if (doughBallWeight == null || doughBallWeight <= 0) {
+                                          return 'Dough ball weight must be a positive integer';  
+                                        }
+                                        if (doughBallWeight <= 0) {
+                                          return 'Number of dough balls must be greater than zero';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ]),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Hydration
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0),
+                  child: Card(
+                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    child: SizedBox(
+                      width: screenWidth * 0.9,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 5),
+                            Text(
+                              'Water',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Column(children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 15.0),
+                                child: SizedBox(
+                                  width: screenWidth * 0.8,
+                                  child: Form(
+                                    key: _hydrationFormKey,
+                                    child: TextFormField(
+                                      controller: hydrationController,
+                                      onChanged: (value) {
+                                        if (_hydrationFormKey.currentState?.validate() == true) {
+                                          _onInputChanged(value, int.parse,
+                                            (value) => _hydration = value.toInt());
+                                        }
                                       },
                                       keyboardType: TextInputType.number,
                                       decoration: const InputDecoration(
-                                        labelText: 'Fat (%)',
+                                        labelText: 'Hydration (%)',
                                         border: OutlineInputBorder(),
+                                        errorMaxLines: 2,
                                       ),
+                                      // trigger validation as soon as this field value has been changed
+                                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Hydration cannot be empty';
+                                        }
+                                        final int? hydration = int.tryParse(value);
+                                        if (hydration == null || hydration <= 0) {
+                                          return 'Hydration must be a positive integer';  
+                                        }
+                                        if (_hasTangzhong && hydration < 75) {
+                                          return 'Hydration must be at least 75% when using Tangzhong';
+                                        }
+                                        return null;
+                                      },
                                     ),
                                   ),
-                                )
-                              : const SizedBox(height: 0)
-                        ]),
-                      ],
+                                ),
+                              ),
+                            ]),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                )
-              ),
-            ),
+                ),
 
-            // Fermentation
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5.0),
-              child: Card(
-                color: Theme.of(context).colorScheme.surfaceContainer,
-                child: SizedBox(
-                  width: screenWidth * 0.9,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 5),
-                        Text(
-                          'Fermentation',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Column(children: [
-                          YeastSelector(
-                            initialValue: YeastType.active,
-                            onYeastTypeChanged: (YeastType newType) {
-                              setState(() {
-                                _yeastType = newType;
-                              });
-                              _calculateIngredients();
-                            }
-                          ),
-                          
-                          // Multi-Stage Fermentation Switch
-                          SwitchListTile(
-                            title: const Text('Multi-Stage Fermentation'),
-                            value: _isMultiStage,
-                            onChanged: (bool value) {
-                              setState(() {
-                                _isMultiStage = value;
-                              });
-                              _calculateIngredients();
-                            },
-                            contentPadding:
-                                const EdgeInsets.symmetric(horizontal: 20.0),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20.0, vertical: 8.0),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: TextField(
-                                    controller: rtController,
-                                    onChanged: (value) {
-                                      _onInputChanged(value, double.parse,
-                                          (value) => _rt = value.toDouble());
-                                    },
-                                    keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      labelText: 'RT (°C)',
-                                      border: OutlineInputBorder(),
-                                      contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 8),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: TextField(
-                                    controller: rtHoursController,
-                                    onChanged: (value) {
-                                      _onInputChanged(value, int.parse,
-                                          (value) => _rtHours = value.toInt());
-                                    },
-                                    keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Hours',
-                                      border: OutlineInputBorder(),
-                                      contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 8),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                // Salt
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0),
+                  child: Card(
+                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    child: SizedBox(
+                      width: screenWidth * 0.9,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 5),
+                            Text(
+                              'Salt',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
                             ),
-                          ),
-                          _isMultiStage
-                            ? Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20.0, vertical: 8.0),
+                            const SizedBox(height: 10),
+                            Column(children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 15.0),
+                                child: SizedBox(
+                                  width: screenWidth * 0.8,
+                                  child: Form(
+                                    key: _saltFormKey,
+                                    child: TextFormField(
+                                      controller: saltPercentageController,
+                                      onChanged: (value) {
+                                        if (_saltFormKey.currentState?.validate() == true) {
+                                          _onInputChanged(
+                                              value,
+                                              double.parse,
+                                              (value) =>
+                                                  _saltPercentage = value.toDouble());
+                                        }
+                                      },
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Salt (%)',
+                                        border: OutlineInputBorder(),
+                                        errorMaxLines: 2,
+                                      ),
+                                      // trigger validation as soon as this field value has been changed
+                                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Salt cannot be empty';
+                                        }
+                                        final num? saltPercentage = num.tryParse(value);
+                                        if (saltPercentage! <= 0) {
+                                          return 'Salt percentage must be greater than zero';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ]),
+                          ],
+                        ),
+                      ),
+                    )
+                  ),
+                ),
+
+                // Optional Ingredients
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0),
+                  child: Card(
+                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    child: SizedBox(
+                      width: screenWidth * 0.9,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 5),
+                            Text(
+                              'Optional',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Column(children: [
+                              SwitchListTile(
+                                title: const Text('Sugar'),
+                                value: _hasSugar,
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    _hasSugar = value;
+                                    if (value) {
+                                      ingredients.add(
+                                        IngredientData(label: 'Sugar', value: _sugar),
+                                      );
+                                      dev.log(
+                                          'Ingredient added: ${ingredients.length}');
+                                    } else {
+                                      ingredients.removeWhere(
+                                          (element) => element.label == 'Sugar');
+                                      dev.log(
+                                          'Ingredient removed:${ingredients.length}');
+                                    }
+                                  });
+                                  _calculateIngredients();
+                                },
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
+                              ),
+                              SwitchListTile(
+                                title: const Text('Fat'),
+                                value: _hasFat,
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    _hasFat = value;
+                                    if (value) {
+                                      ingredients.add(
+                                        IngredientData(label: 'Fat', value: _fat),
+                                      );
+                                    } else {
+                                      ingredients.removeWhere(
+                                          (element) => element.label == 'Fat');
+                                    }
+                                  });
+                                  _calculateIngredients();
+                                },
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
+                              ),
+                              _hasSugar
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(bottom: 15.0),
+                                      child: SizedBox(
+                                        width: screenWidth * 0.8,
+                                        child: Form(
+                                          key: _optionalIngredientsFormKey,
+                                          child: TextFormField(
+                                            controller: sugarController,
+                                            onChanged: (value) {
+                                              if (_optionalIngredientsFormKey.currentState?.validate() == true) {
+                                                _onInputChanged(
+                                                    value,
+                                                    double.parse,
+                                                    (value) => _sugarPercentage =
+                                                        value.toDouble());
+                                              }
+                                            },
+                                            keyboardType: TextInputType.number,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Sugar (%)',
+                                              border: OutlineInputBorder(),
+                                              errorMaxLines: 2,
+                                            ),
+                                            // trigger validation as soon as this field value has been changed
+                                            autovalidateMode: AutovalidateMode.onUserInteraction,
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return 'Sugar percentage cannot be empty';
+                                              }
+                                              final num? sugarPercentage = num.tryParse(value);
+                                              if (sugarPercentage! <= 0) {
+                                                return 'Sugar percentage must be greater than zero';
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : const SizedBox(height: 0),
+                              _hasFat
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(bottom: 15.0),
+                                      child: SizedBox(
+                                        width: screenWidth * 0.8,
+                                        child: Form(
+                                          key: _optionalIngredientsFormKey,
+                                          child: TextFormField(
+                                            controller: fatController,
+                                            onChanged: (value) {
+                                              if (_optionalIngredientsFormKey.currentState?.validate() == true) {
+                                                _onInputChanged(
+                                                    value,
+                                                    double.parse,
+                                                    (value) => _fatPercentage =
+                                                        value.toDouble());
+                                              }
+                                            },
+                                            keyboardType: TextInputType.number,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Fat (%)',
+                                              border: OutlineInputBorder(),
+                                              errorMaxLines: 2,
+                                            ),
+                                            // trigger validation as soon as this field value has been changed
+                                            autovalidateMode: AutovalidateMode.onUserInteraction,
+                                            validator : (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return 'Fat percentage cannot be empty';
+                                              }
+                                              final num? fatPercentage = num.tryParse(value);
+                                              if (fatPercentage! <= 0) {
+                                                return 'Fat percentage must be greater than zero';
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : const SizedBox(height: 0)
+                            ]),
+                          ],
+                        ),
+                      ),
+                    )
+                  ),
+                ),
+
+                // Fermentation
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0),
+                  child: Card(
+                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    child: SizedBox(
+                      width: screenWidth * 0.9,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 5),
+                            Text(
+                              'Fermentation',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Column(children: [
+                              YeastSelector(
+                                initialValue: YeastType.active,
+                                onYeastTypeChanged: (YeastType newType) {
+                                  setState(() {
+                                    _yeastType = newType;
+                                  });
+                                  _calculateIngredients();
+                                }
+                              ),
+                              
+                              // Multi-Stage Fermentation Switch
+                              SwitchListTile(
+                                title: const Text('Multi-Stage Fermentation'),
+                                value: _isMultiStage,
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    _isMultiStage = value;
+                                  });
+                                  _calculateIngredients();
+                                },
+                                contentPadding:
+                                    const EdgeInsets.symmetric(horizontal: 20.0),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                                 child: Row(
                                   children: [
                                     Expanded(
-                                      child: TextField(
-                                        controller: ctController,
-                                        onChanged: (value) {
-                                          _onInputChanged(value, int.parse,
-                                              (value) => _ct = value.toInt());
-                                        },
-                                        keyboardType: TextInputType.number,
-                                        decoration: const InputDecoration(
-                                          labelText: 'CT (°C)',
-                                          border: OutlineInputBorder(),
-                                          contentPadding: EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 8),
+                                      child: Form(
+                                        key: _rtFormKey,
+                                        child: TextFormField(
+                                          controller: rtController,
+                                          onChanged: (value) {
+                                            if (_rtFormKey.currentState?.validate() == true) {
+                                              _onInputChanged(value, double.parse,
+                                                  (value) => _rt = value.toDouble());
+                                            }
+                                          },
+                                          keyboardType: TextInputType.number,
+                                          decoration: const InputDecoration(
+                                            labelText: 'RT (°C)',
+                                            border: OutlineInputBorder(),
+                                            errorMaxLines: 2,
+                                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          ),
+                                          // trigger validation as soon as this field value has been changed
+                                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                                          validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return 'Temperature cannot be empty';
+                                              }
+
+                                              // Check if the value is a valid number
+                                              final double? parsedValue = double.tryParse(value);
+                                              if (parsedValue == null) {
+                                                return 'Please enter a valid number';
+                                              }
+
+                                              // Check if the value is within the specified range
+                                              if (parsedValue < 15.0 || parsedValue > 25.0) {
+                                                return 'Temperature must be between 4.0 and 8.0°C';
+                                              }
+
+                                              // Check if the number is either an integer or has a .5 decimal precision
+                                              if (parsedValue % 1 != 0 && (parsedValue * 10) % 5 != 0) {
+                                                return 'Temperature must be a whole number or have .5 precision';
+                                              }
+
+                                              return null;
+                                            },
                                         ),
                                       ),
                                     ),
                                     const SizedBox(width: 16),
                                     Expanded(
-                                      child: TextField(
-                                        controller: ctHoursController,
-                                        onChanged: (value) {
-                                          _onInputChanged(
-                                              value,
-                                              int.parse,
-                                              (value) =>
-                                                  _ctHours = value.toInt());
-                                        },
-                                        keyboardType: TextInputType.number,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Hours',
-                                          border: OutlineInputBorder(),
-                                          contentPadding: EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 8),
+                                      child: Form(
+                                        key: _rtHoursFormKey,
+                                        child: TextFormField(
+                                          controller: rtHoursController,
+                                          onChanged: (value) {
+                                            if (_rtHoursFormKey.currentState?.validate() == true) {
+                                              _onInputChanged(value, int.parse,
+                                                  (value) => _rtHours = value.toInt());
+                                            }
+                                          },
+                                          keyboardType: TextInputType.number,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Hours',
+                                            border: OutlineInputBorder(),
+                                            errorMaxLines: 2,
+                                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          ),
+                                          // trigger validation as soon as this field value has been changed
+                                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Proofing hours cannot be empty';
+                                            }
+                                        
+                                            // Check if the value is a valid number
+                                            final int? parsedValue = int.tryParse(value);
+                                            if (parsedValue == null) {
+                                              return 'Please enter a valid integer';
+                                            }
+                                        
+                                            // Check if the value is within the specified range
+                                            if (parsedValue < 2 || parsedValue > 24) {
+                                              return 'Proofing hours must be between 2 and 24';
+                                            }
+                                        
+                                            return null;
+                                          },
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
-                              )
-                            : const SizedBox(height: 0),
-                          advancedProvider.usePreferments
-                            ? Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20.0, vertical: 8.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(advancedProvider
-                                        .prefermentType.displayName),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    Row(
+                              ),
+                              _isMultiStage
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                                    child: Row(
                                       children: [
                                         Expanded(
-                                          child: TextField(
-                                            controller:
-                                                prefPercentageController,
-                                            onChanged: (value) {
-                                              _onInputChanged(
-                                                  value,
-                                                  int.parse,
-                                                  (value) =>
-                                                      _prefermentPercentage =
-                                                          value.toInt());
-                                            },
-                                            keyboardType: TextInputType.number,
-                                            decoration: const InputDecoration(
-                                              labelText: 'Preferment (%)',
-                                              border: OutlineInputBorder(),
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                      horizontal: 12,
-                                                      vertical: 8),
+                                          child: Form(
+                                            key: _ctFormKey,
+                                            child: TextFormField(
+                                              controller: ctController,
+                                              onChanged: (value) {
+                                                if (_ctFormKey.currentState?.validate() == true) {
+                                                  _onInputChanged(value, int.parse,
+                                                      (value) => _ct = value.toInt());
+                                                }
+                                              },
+                                              keyboardType: TextInputType.number,
+                                              decoration: const InputDecoration(
+                                                labelText: 'CT (°C)',
+                                                border: OutlineInputBorder(),
+                                                errorMaxLines: 2,
+                                                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                              ),
+                                              validator: (value) {
+                                                if (value == null || value.isEmpty) {
+                                                  return 'Temperature cannot be empty';
+                                                }
+                                            
+                                                // Check if the value is a valid number
+                                                final double? parsedValue = double.tryParse(value);
+                                                if (parsedValue == null) {
+                                                  return 'Please enter a valid number';
+                                                }
+                                            
+                                                // Check if the value is within the specified range
+                                                if (parsedValue < 4.0 || parsedValue > 8.0) {
+                                                  return 'Temperature must be between 4.0 and 8.0°C';
+                                                }
+                                            
+                                                // Check if the number is either an integer or has a .5 decimal precision
+                                                if (parsedValue % 1 != 0 && (parsedValue * 10) % 5 != 0) {
+                                                  return 'Temperature must be a whole number or have .5 precision';
+                                                }
+                                            
+                                                return null;
+                                              },
                                             ),
                                           ),
                                         ),
                                         const SizedBox(width: 16),
                                         Expanded(
-                                          child: TextField(
-                                            controller: prefHoursController,
-                                            onChanged: (value) {
-                                              _onInputChanged(
-                                                  value,
-                                                  int.parse,
-                                                  (value) => _prefermentHours =
-                                                      value.toInt());
-                                            },
-                                            keyboardType: TextInputType.number,
-                                            decoration: const InputDecoration(
-                                              labelText: 'Hours',
-                                              border: OutlineInputBorder(),
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                      horizontal: 12,
-                                                      vertical: 8),
+                                          child: Form(
+                                            key: _ctHoursFormKey,
+                                            child: TextFormField(
+                                              controller: ctHoursController,
+                                              onChanged: (value) {
+                                                if (_ctHoursFormKey.currentState?.validate() == true) {
+                                                  _onInputChanged(
+                                                      value,
+                                                      int.parse,
+                                                      (value) =>
+                                                          _ctHours = value.toInt());
+                                                }
+                                              },
+                                              keyboardType: TextInputType.number,
+                                              decoration: const InputDecoration(
+                                                labelText: 'Hours',
+                                                border: OutlineInputBorder(),
+                                                errorMaxLines: 2,
+                                                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                              ),
+                                              validator: (value) {
+                                                if (value == null || value.isEmpty) {
+                                                  return 'Proofing hours cannot be empty';
+                                                }
+                                            
+                                                // Check if the value is a valid number
+                                                final int? parsedValue = int.tryParse(value);
+                                                if (parsedValue == null) {
+                                                  return 'Please enter a valid number';
+                                                }
+                                            
+                                                // Check if the value is within the specified range
+                                                if (parsedValue < 16 || parsedValue > 96) {
+                                                  return 'Proofing hours must be between 16 and 96';
+                                                }
+                                            
+                                                return null;
+                                              },
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ],
-                                ))
-                            : const SizedBox(height: 0),
-                        ]),
-                      ],
-                    ),
-                  ),
-                )
-              ),
-            ),
-
-            // Final Ingredients
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10.0),
-              child: Card(
-                color: Theme.of(context).colorScheme.surfaceContainer,
-                child: SizedBox(
-                  width: screenWidth * 0.9,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 5),
-                        Text(
-                          'Final Dough Ingredients',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
+                                  )
+                                : const SizedBox(height: 0),
+                              advancedProvider.usePreferments
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20.0, vertical: 8.0),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(advancedProvider
+                                            .prefermentType.displayName),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Form(
+                                                key: _prefermentFormKey,
+                                                child: TextFormField(
+                                                  controller: prefPercentageController,
+                                                  onChanged: (value) {
+                                                    if (_prefermentFormKey.currentState?.validate() == true) {
+                                                      _onInputChanged(
+                                                          value,
+                                                          int.parse,
+                                                          (value) =>
+                                                              _prefermentPercentage =
+                                                                  value.toInt());
+                                                    }
+                                                  },
+                                                  keyboardType: TextInputType.number,
+                                                  decoration: const InputDecoration(
+                                                    labelText: 'Preferment (%)',
+                                                    border: OutlineInputBorder(),
+                                                    errorMaxLines: 2,
+                                                    contentPadding: EdgeInsets.symmetric(horizontal: 12,vertical: 8),
+                                                  ),
+                                                  // trigger validation as soon as this field value has been changed
+                                                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                                                  validator: (value) {
+                                                    if (value == null || value.isEmpty) {
+                                                      return 'Preferment percentage cannot be empty';
+                                                    }
+                                                
+                                                    // Check if the value is a valid number
+                                                    final int? parsedValue = int.tryParse(value);
+                                                    if (parsedValue == null) {
+                                                      return 'Please enter a valid integer';
+                                                    }
+                                                
+                                                    // Check if the value is within the specified range
+                                                    if (parsedValue < 5 || parsedValue > 50) {
+                                                      return 'Preferment percentage must be between 5 and 50%';
+                                                    }
+                                                
+                                                    return null;
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: Form(
+                                                key: _prefermentFormKey,
+                                                child: TextFormField(
+                                                  controller: prefHoursController,
+                                                  onChanged: (value) {
+                                                    if (_prefermentFormKey.currentState?.validate() == true) {
+                                                      _onInputChanged(
+                                                          value,
+                                                          int.parse,
+                                                          (value) => _prefermentHours =
+                                                              value.toInt());
+                                                    }
+                                                  },
+                                                  keyboardType: TextInputType.number,
+                                                  decoration: const InputDecoration(
+                                                    labelText: 'Hours',
+                                                    border: OutlineInputBorder(),
+                                                    errorMaxLines: 2,
+                                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                                  ),
+                                                  // trigger validation as soon as this field value has been changed
+                                                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                                                  validator: (value) {
+                                                    if (value == null || value.isEmpty) {
+                                                      return 'Preferment proofing hours cannot be empty';
+                                                    }
+                                                
+                                                    // Check if the value is a valid number
+                                                    final int? parsedValue = int.tryParse(value);
+                                                    if (parsedValue == null) {
+                                                      return 'Please enter a valid number';
+                                                    }
+                                                
+                                                    // Check if the value is within the specified range
+                                                    if (parsedValue < 3 || parsedValue > 13) {
+                                                      return 'Preferment proofing hours must be between 3 and 13';
+                                                    }
+                                                    return null;
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ))
+                                : const SizedBox(height: 0),
+                            ]),
+                          ],
                         ),
-                        const SizedBox(height: 10),
-                        _hasPreferment
-                          ? Text(
-                              advancedProvider.prefermentType.displayName,
-                              style: TextStyle(
-                                color:
-                                    Theme.of(context).colorScheme.onSurface,
-                                fontSize: 14,
-                              ),
-                            )
-                          : const SizedBox(height: 0),
-                        _hasPreferment
-                          ? RecipeIngredients(
-                              initialIngredients: prefermentIngredients)
-                          : const SizedBox(height: 0),
-                        _hasPreferment
-                          ? Divider(
-                              indent: 16,
-                              endIndent: 16,
-                              color: Theme.of(context).colorScheme.outlineVariant,
-                            )
-                          : const SizedBox(height: 0),
-                        advancedProvider.useTangzhong
-                          ? Text(
-                              'Tangzhong',
-                              style: TextStyle(
-                                color:
-                                    Theme.of(context).colorScheme.onSurface,
-                                fontSize: 14,
-                              ),
-                            )
-                          : const SizedBox(height: 0),
-                        advancedProvider.useTangzhong
-                          ? RecipeIngredients(
-                              initialIngredients: tangzhongIngredients)
-                          : const SizedBox(height: 0),
-                        advancedProvider.useTangzhong
-                          ? Divider(
-                              indent: 16,
-                              endIndent: 16,
-                              color: Theme.of(context).colorScheme.outlineVariant,
-                            )
-                          : const SizedBox(height: 0),
-                        (_hasPreferment || advancedProvider.useTangzhong)
-                          ? Text(
-                              'Main Dough',
+                      ),
+                    )
+                  ),
+                ),
+
+                // Final Ingredients
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: Card(
+                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    child: SizedBox(
+                      width: screenWidth * 0.9,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 5),
+                            Text(
+                              'Final Dough Ingredients',
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.onSurface,
-                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
                               ),
-                            )
-                          : const SizedBox(height: 0),
-                        RecipeIngredients(initialIngredients: ingredients)
-                      ],
+                            ),
+                            const SizedBox(height: 10),
+                            _hasPreferment
+                              ? Text(
+                                  advancedProvider.prefermentType.displayName,
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                    fontSize: 14,
+                                  ),
+                                )
+                              : const SizedBox(height: 0),
+                            _hasPreferment
+                              ? RecipeIngredients(
+                                  initialIngredients: prefermentIngredients)
+                              : const SizedBox(height: 0),
+                            _hasPreferment
+                              ? Divider(
+                                  indent: 16,
+                                  endIndent: 16,
+                                  color: Theme.of(context).colorScheme.outlineVariant,
+                                )
+                              : const SizedBox(height: 0),
+                            advancedProvider.useTangzhong
+                              ? Text(
+                                  'Tangzhong',
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                    fontSize: 14,
+                                  ),
+                                )
+                              : const SizedBox(height: 0),
+                            advancedProvider.useTangzhong
+                              ? RecipeIngredients(
+                                  initialIngredients: tangzhongIngredients)
+                              : const SizedBox(height: 0),
+                            advancedProvider.useTangzhong
+                              ? Divider(
+                                  indent: 16,
+                                  endIndent: 16,
+                                  color: Theme.of(context).colorScheme.outlineVariant,
+                                )
+                              : const SizedBox(height: 0),
+                            (_hasPreferment || advancedProvider.useTangzhong)
+                              ? Text(
+                                  'Main Dough',
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.onSurface,
+                                    fontSize: 14,
+                                  ),
+                                )
+                              : const SizedBox(height: 0),
+                            RecipeIngredients(initialIngredients: ingredients)
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
 
-            const SizedBox(height: 80),
-          ]
-        )
-      ));
-    });
+                const SizedBox(height: 80),
+              ]
+            )
+          )
+        );
+      }
+    );
   }
 }
